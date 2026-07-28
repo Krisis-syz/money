@@ -111,6 +111,7 @@ function renderAssetGrid() {
   });
 
   if (sortAsc) items.sort((a, b) => b.total - a.total);
+  else items.sort((a, b) => a.total - b.total);
 
   grid.innerHTML = items.map(item => `
     <div class="asset-card" data-id="${item.id}" onclick="handleCardClick('${item.id}')" onmousedown="startLongPress('${item.id}')" onmouseup="cancelLongPress()" onmouseleave="cancelLongPress()" ontouchstart="startLongPress('${item.id}')" ontouchend="cancelLongPress()" ontouchcancel="cancelLongPress()" style="cursor:pointer;">
