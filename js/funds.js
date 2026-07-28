@@ -324,7 +324,7 @@ function renderRecordPage() {
               <div class="record-status ${item.hasRecord ? 'filled' : 'empty'}">${item.hasRecord ? '已填写' : '未填写'}</div>
             </div>
             <div class="record-card-name">${item.name}</div>
-            <input type="number" class="record-input" data-id="${item.id}" placeholder="¥0.00" value="${item.amount !== '' ? item.amount : ''}" inputmode="decimal">
+            <input type="text" class="record-input" data-id="${item.id}" placeholder="¥0.00" value="${item.amount !== '' ? item.amount : ''}" readonly inputmode="none" onfocus="this.blur()">
           </div>
         `).join('')}
       </div>
@@ -336,16 +336,20 @@ function renderRecordPage() {
 async function saveMonthRecords() {
   const inputs = document.querySelectorAll('.record-input');
   const records = [];
+  let allFilled = true;
+
   inputs.forEach(inp => {
     const sourceId = inp.dataset.id;
     const val = parseFloat(inp.value);
-    if (!isNaN(val)) {
+    if (isNaN(val) || inp.value.trim() === '') {
+      allFilled = false;
+    } else {
       records.push({ sourceId, amount: val });
     }
   });
 
-  if (records.length === 0) {
-    alert('请至少填写一条记录');
+  if (!allFilled) {
+    alert('请填写所有资产的金额');
     return;
   }
 
@@ -410,10 +414,12 @@ function kbConfirm() {
 document.addEventListener('click', e => {
   const inp = e.target.closest('.record-input');
   if (inp) {
+    inp.blur();
     showKeyboard(inp);
     e.preventDefault();
+    e.stopPropagation();
   }
-});
+}, true);
 
 // 点击键盘外部关闭
 document.addEventListener('click', e => {
@@ -441,7 +447,14 @@ function getMonthTotal(ym) {
 
 function getAmountForMonth(sourceId, ym) {
   const records = allRecords.filter(r => r.sourceId === sourceId && r.yearMonth === ym);
-  return records.length > 0 ? records[records.length - 1].amount : 0;
+  if (records.length > 0) return records[records.length - 1].amount;
+  // 没有当月记录时，回退到上个月
+  if (ym === currentMonth) {
+    const prev = getPrevMonth(ym);
+    const prevRecords = allRecords.filter(r => r.sourceId === sourceId && r.yearMonth === prev);
+    return prevRecords.length > 0 ? prevRecords[prevRecords.length - 1].amount : 0;
+  }
+  return 0;
 }
 
 function fmtNum(n) {
