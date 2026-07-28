@@ -2,71 +2,207 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>登录 - 体彩投资计划</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>登录 - 资产管理</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
   <link rel="icon" href="icon.png" type="image/png">
-  <meta name="theme-color" content="#0a0e17">
+  <meta name="theme-color" content="#F0E9F6">
   <script src="js/supabase.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #F0E9F6;
+      min-height: 100vh;
+      min-height: 100dvh;
+      color: #2d2d3a;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .auth-card {
+      background: #fff;
+      border-radius: 24px;
+      padding: 40px 28px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 4px 24px rgba(148,111,178,0.12);
+    }
+
+    .auth-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      color: #6b3fa0;
+      margin-bottom: 6px;
+    }
+
+    .auth-subtitle {
+      text-align: center;
+      color: #9ca3af;
+      font-size: 0.85rem;
+      margin-bottom: 28px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #6b3fa0;
+      margin-bottom: 6px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 14px;
+      background: #F7F2FB;
+      border: 1px solid rgba(148,111,178,0.2);
+      border-radius: 12px;
+      color: #2d2d3a;
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #946FB2;
+    }
+
+    .form-group input::placeholder { color: #b0a4c4; }
+
+    .auth-error {
+      background: rgba(239,68,68,0.1);
+      color: #ef4444;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+
+    .auth-success {
+      background: rgba(34,197,94,0.1);
+      color: #22c55e;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn:active { opacity: 0.85; }
+
+    .btn-primary {
+      background: #946FB2;
+      color: #fff;
+    }
+
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      margin: 20px 0;
+      color: #b0a4c4;
+      font-size: 0.8rem;
+    }
+
+    .auth-divider::before, .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(148,111,178,0.15);
+    }
+
+    .auth-divider span { padding: 0 12px; }
+
+    .auth-switch {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.85rem;
+      color: #9ca3af;
+    }
+
+    .btn-link {
+      background: none;
+      border: none;
+      color: #946FB2;
+      font-weight: 600;
+      font-family: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <div class="auth-container">
-      <div class="auth-card">
-        <h1 class="auth-title">体彩投资计划</h1>
-        <p class="auth-subtitle">登录以管理您的投资数据</p>
+  <div class="auth-card">
+    <h1 class="auth-title">资产管理</h1>
+    <p class="auth-subtitle">登录以管理您的资产数据</p>
 
-        <!-- 登录表单 -->
-        <form id="loginForm" class="auth-form">
-          <div class="form-group">
-            <label for="loginEmail">邮箱</label>
-            <input type="email" id="loginEmail" required placeholder="请输入邮箱">
-          </div>
-          <div class="form-group">
-            <label for="loginPassword">密码</label>
-            <input type="password" id="loginPassword" required placeholder="请输入密码" minlength="6">
-          </div>
-          <div id="loginError" class="auth-error" style="display:none;"></div>
-          <button type="submit" class="btn btn-primary btn-block">登录</button>
-        </form>
-
-        <div class="auth-divider"><span>或</span></div>
-
-        <!-- 注册表单 -->
-        <form id="registerForm" class="auth-form" style="display:none;">
-          <div class="form-group">
-            <label for="registerEmail">邮箱</label>
-            <input type="email" id="registerEmail" required placeholder="请输入邮箱">
-          </div>
-          <div class="form-group">
-            <label for="registerPassword">密码</label>
-            <input type="password" id="registerPassword" required placeholder="请输入密码（至少6位）" minlength="6">
-          </div>
-          <div id="registerError" class="auth-error" style="display:none;"></div>
-          <div id="registerSuccess" class="auth-success" style="display:none;"></div>
-          <button type="submit" class="btn btn-primary btn-block">注册</button>
-        </form>
-
-        <div class="auth-switch">
-          <span id="switchText">没有账号？</span>
-          <button type="button" class="btn-link" id="switchBtn" onclick="toggleForm()">注册</button>
-        </div>
+    <!-- 登录表单 -->
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="loginEmail">邮箱</label>
+        <input type="email" id="loginEmail" required placeholder="请输入邮箱">
       </div>
+      <div class="form-group">
+        <label for="loginPassword">密码</label>
+        <input type="password" id="loginPassword" required placeholder="请输入密码" minlength="6">
+      </div>
+      <div id="loginError" class="auth-error" style="display:none;"></div>
+      <button type="submit" class="btn btn-primary">登录</button>
+    </form>
+
+    <div class="auth-divider"><span>或</span></div>
+
+    <!-- 注册表单 -->
+    <form id="registerForm" style="display:none;">
+      <div class="form-group">
+        <label for="registerEmail">邮箱</label>
+        <input type="email" id="registerEmail" required placeholder="请输入邮箱">
+      </div>
+      <div class="form-group">
+        <label for="registerPassword">密码</label>
+        <input type="password" id="registerPassword" required placeholder="请输入密码（至少6位）" minlength="6">
+      </div>
+      <div id="registerError" class="auth-error" style="display:none;"></div>
+      <div id="registerSuccess" class="auth-success" style="display:none;"></div>
+      <button type="submit" class="btn btn-primary">注册</button>
+    </form>
+
+    <div class="auth-switch">
+      <span id="switchText">没有账号？</span>
+      <button type="button" class="btn-link" id="switchBtn" onclick="toggleForm()">注册</button>
     </div>
   </div>
 
   <script src="js/api.js"></script>
   <script>
-    // 如果已登录，跳转到主页
     document.addEventListener('DOMContentLoaded', async () => {
       await waitForSupabase();
       const user = await getCurrentUser();
-      if (user) {
-        window.location.href = 'index.html';
-      }
+      if (user) window.location.href = 'index.html';
     });
 
     let isLoginMode = true;
@@ -77,60 +213,48 @@
       document.getElementById('registerForm').style.display = isLoginMode ? 'none' : 'block';
       document.getElementById('switchText').textContent = isLoginMode ? '没有账号？' : '已有账号？';
       document.getElementById('switchBtn').textContent = isLoginMode ? '注册' : '登录';
-      // 清除错误信息
-      hideError('loginError');
-      hideError('registerError');
+      document.getElementById('loginError').style.display = 'none';
+      document.getElementById('registerError').style.display = 'none';
       document.getElementById('registerSuccess').style.display = 'none';
     }
 
-    function showError(elementId, message) {
-      const el = document.getElementById(elementId);
-      el.textContent = message;
-      el.style.display = 'block';
-    }
-
-    function hideError(elementId) {
-      document.getElementById(elementId).style.display = 'none';
-    }
-
-    // 登录
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      hideError('loginError');
-
+      document.getElementById('loginError').style.display = 'none';
       const email = document.getElementById('loginEmail').value;
       const password = document.getElementById('loginPassword').value;
-
       try {
         await signIn(email, password);
         window.location.href = 'index.html';
       } catch (error) {
-        showError('loginError', error.message || '登录失败');
+        const el = document.getElementById('loginError');
+        el.textContent = error.message || '登录失败';
+        el.style.display = 'block';
       }
     });
 
-    // 注册
     document.getElementById('registerForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      hideError('registerError');
+      document.getElementById('registerError').style.display = 'none';
       document.getElementById('registerSuccess').style.display = 'none';
-
       const email = document.getElementById('registerEmail').value;
       const password = document.getElementById('registerPassword').value;
-
       try {
         const result = await signUp(email, password);
         if (result.needsConfirmation) {
-          showError('registerError', '请查收邮箱确认链接');
+          const el = document.getElementById('registerError');
+          el.textContent = '请查收邮箱确认链接';
+          el.style.display = 'block';
         } else {
-          document.getElementById('registerSuccess').textContent = '注册成功，正在跳转...';
-          document.getElementById('registerSuccess').style.display = 'block';
-          setTimeout(() => {
-            window.location.href = 'index.html';
-          }, 1000);
+          const el = document.getElementById('registerSuccess');
+          el.textContent = '注册成功，正在跳转...';
+          el.style.display = 'block';
+          setTimeout(() => { window.location.href = 'index.html'; }, 1000);
         }
       } catch (error) {
-        showError('registerError', error.message || '注册失败');
+        const el = document.getElementById('registerError');
+        el.textContent = error.message || '注册失败';
+        el.style.display = 'block';
       }
     });
   </script>
