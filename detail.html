@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>资产详情</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="icon" href="icon.png" type="image/png">
+  <meta name="theme-color" content="#F0E9F6">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/supabase.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #F0E9F6;
+      min-height: 100vh;
+      min-height: 100dvh;
+      color: #2d2d3a;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 16px 16px 40px;
+    }
+
+    /* ========== 顶部导航 ========== */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .back-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: rgba(148,111,178,0.1);
+      border: none;
+      color: #6b3fa0;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+
+    .back-btn:active { background: rgba(148,111,178,0.2); }
+
+    .top-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #2d2d3a;
+    }
+
+    /* ========== 资产卡片 ========== */
+    .asset-card {
+      background: rgba(168, 124, 197, 0.65);
+      border: 1.5px solid rgba(255,255,255,0.3);
+      border-radius: 24px;
+      padding: 24px 22px 20px;
+      margin-bottom: 20px;
+      color: #fff;
+      box-shadow: 0 0 20px rgba(255,255,255,0.1), 0 4px 20px rgba(148,111,178,0.2);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .asset-card::after {
+      content: '';
+      position: absolute;
+      top: -30px;
+      right: -30px;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+    }
+
+    .asset-card-label {
+      font-size: 0.8rem;
+      opacity: 0.85;
+      margin-bottom: 4px;
+    }
+
+    .asset-card-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .asset-card-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .asset-type-badge {
+      padding: 2px 10px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.2);
+      font-size: 0.68rem;
+      font-weight: 500;
+    }
+
+    .detail-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: #fff;
+      flex-shrink: 0;
+      margin-left: auto;
+      margin-right: 15px;
+    }
+
+    .asset-card-amount {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .asset-card-tags {
+      display: flex;
+      gap: 10px;
+    }
+
+    .asset-tag {
+      padding: 5px 14px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.15);
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.9);
+    }
+
+    .asset-tag-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      margin-left: 4px;
+    }
+
+    /* ========== 趋势图 ========== */
+    .chart-section {
+      background: #F7F2FB;
+      border-radius: 20px;
+      padding: 18px 16px;
+      margin-bottom: 16px;
+    }
+
+    .chart-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .chart-tabs {
+      display: flex;
+      gap: 4px;
+      background: rgba(148,111,178,0.08);
+      border-radius: 10px;
+      padding: 3px;
+    }
+
+    .chart-tab {
+      padding: 5px 12px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: #9ca3af;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chart-tab.active {
+      background: #fff;
+      color: #6b3fa0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    .chart-range-group {
+      display: flex;
+      gap: 4px;
+      margin-left: auto;
+    }
+
+    .range-btn {
+      padding: 4px 10px;
+      border: 1px solid rgba(148,111,178,0.15);
+      border-radius: 12px;
+      background: transparent;
+      color: #9ca3af;
+      font-size: 0.68rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .range-btn.active {
+      background: rgba(148,111,178,0.12);
+      color: #6b3fa0;
+      border-color: rgba(148,111,178,0.25);
+    }
+
+    .chart-wrap { position: relative; height: 180px; }
+
+    /* ========== 历史记录 ========== */
+    .history-section {
+      background: #F7F2FB;
+      border-radius: 20px;
+      padding: 18px 16px;
+    }
+
+    .history-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #6b3fa0;
+      margin-bottom: 14px;
+    }
+
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .history-table th {
+      text-align: left;
+      padding: 6px 0;
+      font-size: 0.68rem;
+      color: #9ca3af;
+      font-weight: 500;
+      border-bottom: 1px solid rgba(148,111,178,0.1);
+    }
+
+    .history-table td {
+      padding: 10px 0;
+      font-size: 0.82rem;
+      border-bottom: 1px solid rgba(148,111,178,0.06);
+    }
+
+    .history-table .mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+    }
+
+    .empty-hint {
+      text-align: center;
+      padding: 40px 20px;
+      color: #b0a4c4;
+      font-size: 0.85rem;
+    }
+
+    .empty-hint i { font-size: 2rem; display: block; margin-bottom: 10px; opacity: 0.4; }
+
+    .more-btn {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: 1px dashed rgba(148,111,178,0.3);
+      border-radius: 12px;
+      background: transparent;
+      color: #946FB2;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .more-btn:active { background: rgba(148,111,178,0.08); }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- 顶部导航 -->
+    <div class="top-bar">
+      <a href="index.html" class="back-btn"><i class="fa-solid fa-chevron-left"></i></a>
+      <span class="top-title" id="topTitle">资产详情</span>
+    </div>
+
+    <!-- 资产卡片 -->
+    <div class="asset-card" id="assetCard">
+      <div class="asset-card-label" id="assetLabel">--</div>
+      <div class="asset-card-top">
+        <div class="asset-card-name" id="assetName">--</div>
+        <div class="asset-type-badge" id="assetType"></div>
+        <div class="detail-icon" id="detailIcon"><i class="fa-solid fa-wallet"></i></div>
+      </div>
+      <div class="asset-card-amount" id="assetAmount">¥0.00</div>
+      <div class="asset-card-tags" id="assetTags"></div>
+    </div>
+
+    <!-- 趋势图 -->
+    <div class="chart-section">
+      <div class="chart-header">
+        <div class="chart-tabs" id="chartTabs">
+          <button class="chart-tab active" onclick="setChartMode('amount')">金额</button>
+          <button class="chart-tab" onclick="setChartMode('pct')">占比</button>
+        </div>
+        <div class="chart-range-group">
+          <button class="range-btn" data-range="all" onclick="setRange('all')">全部</button>
+          <button class="range-btn" data-range="3y" onclick="setRange('3y')">近三年</button>
+          <button class="range-btn active" data-range="1y" onclick="setRange('1y')">近一年</button>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+    </div>
+
+    <!-- 历史记录 -->
+    <div class="history-section">
+      <div class="history-title">历史记录</div>
+      <div id="historyContent"></div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    const COLORS = ['#946FB2', '#6366f1', '#ec4899', '#14b8a6', '#f59e0b', '#3b82f6', '#ef4444', '#22c55e'];
+    const ICONS = ['fa-solid fa-wallet', 'fa-solid fa-landmark', 'fa-solid fa-credit-card', 'fa-solid fa-piggy-bank', 'fa-solid fa-chart-line', 'fa-solid fa-coins', 'fa-solid fa-building-columns', 'fa-solid fa-money-bill-wave'];
+    let allSources = [];
+    let allRecords = [];
+    let sourceId = null;
+    let source = null;
+    let chartMode = 'amount';
+    let chartRange = '1y';
+    let trendChart = null;
+    let currentMonth = getCurrentYearMonth();
+    let historyShowCount = 12;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await waitForSupabase();
+      if (!(await requireAuth())) return;
+
+      const params = new URLSearchParams(window.location.search);
+      sourceId = params.get('id');
+      if (!sourceId) { window.location.href = 'index.html'; return; }
+
+      allSources = await fundApi.getSources();
+      allRecords = await fundApi.getAllRecords();
+      source = allSources.find(s => s.id === sourceId);
+      if (!source) { window.location.href = 'index.html'; return; }
+
+      document.getElementById('topTitle').textContent = source.name;
+      document.title = source.name;
+      document.getElementById('assetType').textContent = source.type || '流动';
+      document.querySelector('#detailIcon i').className = source.icon || 'fa-solid fa-wallet';
+      renderCard();
+      renderChart();
+      renderHistory();
+    });
+
+    function renderCard() {
+      const total = getAmountForMonth(sourceId, currentMonth);
+      const prev = getAmountForMonth(sourceId, getPrevMonth(currentMonth));
+      const allTotal = getMonthTotal(currentMonth);
+
+      // 找最新记录月份
+      const sourceRecords = allRecords.filter(r => r.sourceId === sourceId);
+      const latestMonth = sourceRecords.length > 0
+        ? sourceRecords[sourceRecords.length - 1].yearMonth
+        : currentMonth;
+
+      document.getElementById('assetLabel').textContent = latestMonth;
+      document.getElementById('assetName').textContent = source.name;
+      document.getElementById('assetAmount').textContent = '¥' + fmtNum(total);
+
+      const diff = total - prev;
+      const mom = prev > 0 ? ((diff / prev) * 100).toFixed(1) : '0.0';
+      const pct = allTotal > 0 ? ((total / allTotal) * 100).toFixed(1) : '0.0';
+
+      const diffColor = diff >= 0 ? '#ef4444' : '#22c55e';
+
+      const tagsEl = document.getElementById('assetTags');
+      tagsEl.innerHTML = `
+        <div class="asset-tag">收支 <span class="asset-tag-val" style="color:${diffColor}">${diff >= 0 ? '+' : '-'}${fmtNum(diff)}</span></div>
+        <div class="asset-tag">占比 <span class="asset-tag-val" style="color:#fbbf24">${pct}%</span></div>
+        <div class="asset-tag">环比 <span class="asset-tag-val" style="color:${diffColor}">${diff >= 0 ? '+' : ''}${mom}%</span></div>
+      `;
+    }
+
+    function renderChart() {
+      const ctx = document.getElementById('trendChart');
+      if (!ctx) return;
+      if (trendChart) trendChart.destroy();
+
+      const map = {};
+      allRecords.filter(r => r.sourceId === sourceId).forEach(r => {
+        map[r.yearMonth] = r.amount;
+      });
+
+      const allTotals = getMonthlyTotals();
+      let data = Object.entries(map).map(([m, v]) => ({
+        month: m,
+        value: v,
+        pct: allTotals[m] > 0 ? (v / allTotals[m] * 100) : 0
+      }));
+      data.sort((a, b) => a.month.localeCompare(b.month));
+      data = filterByRange(data);
+
+      const canvas = ctx.getContext('2d');
+      const gradient = canvas.createLinearGradient(0, 0, 0, 180);
+      gradient.addColorStop(0, 'rgba(148, 111, 178, 0.7)');
+      gradient.addColorStop(0.14, 'rgba(148, 111, 178, 0.6)');
+      gradient.addColorStop(0.29, 'rgba(148, 111, 178, 0.5)');
+      gradient.addColorStop(0.43, 'rgba(148, 111, 178, 0.4)');
+      gradient.addColorStop(0.57, 'rgba(148, 111, 178, 0.3)');
+      gradient.addColorStop(0.71, 'rgba(148, 111, 178, 0.2)');
+      gradient.addColorStop(0.86, 'rgba(148, 111, 178, 0.1)');
+      gradient.addColorStop(1, 'rgba(148, 111, 178, 0.0)');
+
+      const isAmount = chartMode === 'amount';
+      trendChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: data.map(d => d.month),
+          datasets: [{
+            data: data.map(d => isAmount ? d.value : d.pct),
+            borderColor: '#946FB2',
+            backgroundColor: gradient,
+            pointBackgroundColor: '#946FB2',
+            fill: true, tension: 0.4, pointRadius: 2.5, borderWidth: 2.5
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { maxTicksLimit: 6, color: '#9ca3af', font: { size: 10 } } },
+            y: { border: { display: false }, grid: { color: 'rgba(148,111,178,0.08)', drawTicks: false }, ticks: { color: '#9ca3af', font: { size: 10 }, callback: v => isAmount ? ('¥' + (v >= 1000 ? (v/1000).toFixed(1) + 'k' : v)) : v.toFixed(0) + '%' } }
+          }
+        }
+      });
+    }
+
+    function renderHistory() {
+      const container = document.getElementById('historyContent');
+      const map = {};
+      allRecords.filter(r => r.sourceId === sourceId).forEach(r => {
+        map[r.yearMonth] = r.amount;
+      });
+
+      const allTotals = getMonthlyTotals();
+      let data = Object.entries(map).map(([m, v]) => ({
+        month: m,
+        amount: v,
+        pct: allTotals[m] > 0 ? (v / allTotals[m] * 100) : 0
+      }));
+      data.sort((a, b) => b.month.localeCompare(a.month));
+
+      if (data.length === 0) {
+        container.innerHTML = '<div class="empty-hint"><i class="fa-solid fa-inbox"></i>暂无记录</div>';
+        return;
+      }
+
+      const show = data.slice(0, historyShowCount);
+      const hasMore = data.length > historyShowCount;
+
+      container.innerHTML = `
+        <table class="history-table">
+          <thead><tr><th>时间</th><th>金额</th><th>收支</th><th>占比</th></tr></thead>
+          <tbody>${show.map((d, i) => {
+            const prev = data[i + 1];
+            let diff = '-', diffColor = '';
+            if (prev) {
+              const dv = d.amount - prev.amount;
+              diff = (dv >= 0 ? '+' : '-') + fmtNum(dv);
+              diffColor = dv >= 0 ? '#ef4444' : '#22c55e';
+            }
+            return `<tr>
+              <td>${d.month}</td>
+              <td class="mono">¥${fmtNum(d.amount)}</td>
+              <td class="mono" style="color:${diffColor}">${diff}</td>
+              <td class="mono">${d.pct.toFixed(1)}%</td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table>
+        ${hasMore ? '<button class="more-btn" onclick="showMoreHistory()">更多</button>' : ''}
+      `;
+    }
+
+    function showMoreHistory() {
+      historyShowCount += 12;
+      renderHistory();
+    }
+
+    function setChartMode(mode) {
+      chartMode = mode;
+      document.querySelectorAll('#chartTabs .chart-tab').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent === (mode === 'amount' ? '金额' : '占比'));
+      });
+      renderChart();
+    }
+
+    function setRange(range) {
+      chartRange = range;
+      document.querySelectorAll('.range-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.range === range);
+      });
+      renderChart();
+    }
+
+    function filterByRange(data) {
+      if (chartRange === 'all') return data;
+      const now = new Date();
+      const yearsBack = chartRange === '3y' ? 3 : 1;
+      const cutoff = new Date(now.getFullYear() - yearsBack, now.getMonth() + 1, 1);
+      const cutoffStr = `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, '0')}`;
+      return data.filter(d => d.month >= cutoffStr);
+    }
+
+    // 工具函数
+    function getCurrentYearMonth() {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function getPrevMonth(ym) {
+      const [y, m] = ym.split('-').map(Number);
+      return m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, '0')}`;
+    }
+
+    function getAmountForMonth(sid, ym) {
+      const records = allRecords.filter(r => r.sourceId === sid && r.yearMonth === ym);
+      return records.length > 0 ? records[records.length - 1].amount : 0;
+    }
+
+    function getMonthTotal(ym) {
+      let total = 0;
+      allSources.forEach(s => { total += getAmountForMonth(s.id, ym); });
+      return total;
+    }
+
+    function getMonthlyTotals() {
+      const totals = {};
+      allRecords.forEach(r => { totals[r.yearMonth] = (totals[r.yearMonth] || 0) + r.amount; });
+      return totals;
+    }
+
+    function fmtNum(n) {
+      return Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+  </script>
+</body>
+</html>

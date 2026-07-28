@@ -3,6 +3,9 @@ let allSources = [];
 let allRecords = [];
 let currentMonth = getCurrentYearMonth();
 let sortAsc = true;
+let longPressTimer = null;
+let longPressSourceId = null;
+let currentPage = 'assets';
 
 const COLORS = ['#946FB2', '#6366f1', '#ec4899', '#14b8a6', '#f59e0b', '#3b82f6', '#ef4444', '#22c55e'];
 const ICONS = ['fa-solid fa-wallet', 'fa-solid fa-landmark', 'fa-solid fa-credit-card', 'fa-solid fa-piggy-bank', 'fa-solid fa-chart-line', 'fa-solid fa-coins', 'fa-solid fa-building-columns', 'fa-solid fa-money-bill-wave'];
@@ -19,8 +22,25 @@ async function loadAllData() {
   try {
     allSources = await fundApi.getSources();
     allRecords = await fundApi.getAllRecords();
+    updateRecordBadge();
   } catch (e) {
     console.error('加载数据失败:', e);
+  }
+}
+
+function updateRecordBadge() {
+  const badge = document.getElementById('recordBadge');
+  if (!badge) return;
+  let unfilled = 0;
+  allSources.forEach(s => {
+    const has = allRecords.some(r => r.sourceId === s.id && r.yearMonth === currentMonth);
+    if (!has) unfilled++;
+  });
+  if (unfilled > 0) {
+    badge.textContent = unfilled;
+    badge.style.display = '';
+  } else {
+    badge.style.display = 'none';
   }
 }
 
@@ -87,13 +107,13 @@ function renderAssetGrid() {
       pnlClass = diff >= 0 ? 'up' : 'down';
       pnlText = '本月 ' + (diff >= 0 ? '+' : '-') + fmtNum(diff);
     }
-    return { ...s, total, pnlClass, pnlText, color: COLORS[i % COLORS.length], icon: ICONS[i % ICONS.length], idx: i };
+    return { ...s, total, pnlClass, pnlText, color: COLORS[i % COLORS.length], icon: s.icon || ICONS[i % ICONS.length], idx: i };
   });
 
   if (sortAsc) items.sort((a, b) => b.total - a.total);
 
   grid.innerHTML = items.map(item => `
-    <div class="asset-card">
+    <div class="asset-card" data-id="${item.id}" onclick="handleCardClick('${item.id}')" onmousedown="startLongPress('${item.id}')" onmouseup="cancelLongPress()" onmouseleave="cancelLongPress()" ontouchstart="startLongPress('${item.id}')" ontouchend="cancelLongPress()" ontouchcancel="cancelLongPress()" style="cursor:pointer;">
       <div class="asset-info">
         <div class="asset-top-row">
           <div class="asset-name">${item.name}</div>
@@ -135,7 +155,8 @@ async function confirmAddSource() {
   const name = inp.value.trim();
   if (!name) return;
   try {
-    await fundApi.addSource(name, typeEl.value);
+    const icon = guessIcon(name);
+    await fundApi.addSource(name, typeEl.value, icon);
     allSources = await fundApi.getSources();
     hideAddModal();
     renderAssets();
@@ -146,8 +167,260 @@ async function confirmAddSource() {
 function switchPage(page) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   event.currentTarget.classList.add('active');
-  // 其他页面后续扩展
+  currentPage = page;
+
+  const assetGrid = document.getElementById('assetGrid');
+  const sectionHeader = document.querySelector('.section-header');
+  const recordSection = document.getElementById('recordSection');
+  const totalCard = document.getElementById('totalCard');
+
+  if (page === 'assets') {
+    assetGrid.style.display = '';
+    sectionHeader.style.display = '';
+    recordSection.style.display = 'none';
+    totalCard.style.display = '';
+    renderAssets();
+  } else if (page === 'history') {
+    assetGrid.style.display = 'none';
+    sectionHeader.style.display = 'none';
+    recordSection.style.display = '';
+    totalCard.style.display = 'none';
+    renderRecordPage();
+  } else {
+    assetGrid.style.display = '';
+    sectionHeader.style.display = '';
+    recordSection.style.display = 'none';
+    totalCard.style.display = '';
+  }
 }
+
+// ============ 长按检测 ============
+function startLongPress(id) {
+  cancelLongPress();
+  longPressTimer = setTimeout(() => {
+    longPressSourceId = id;
+    showActionModal(id);
+  }, 500);
+}
+
+function cancelLongPress() {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+  }
+}
+
+let cardClickBlocked = false;
+
+function handleCardClick(id) {
+  if (cardClickBlocked) { cardClickBlocked = false; return; }
+  location.href = 'detail.html?id=' + id;
+}
+
+// ============ 长按操作弹窗 ============
+function showActionModal(id) {
+  cardClickBlocked = true;
+  const source = allSources.find(s => s.id === id);
+  if (!source) return;
+  document.getElementById('actionTitle').textContent = source.name;
+  document.getElementById('actionModal').classList.add('show');
+}
+
+function hideActionModal() {
+  document.getElementById('actionModal').classList.remove('show');
+  longPressSourceId = null;
+}
+
+document.getElementById('actionModal').addEventListener('click', e => { if (e.target === e.currentTarget) hideActionModal(); });
+
+// ============ 修改类别弹窗 ============
+function showEditModal() {
+  const id = longPressSourceId;
+  hideActionModal();
+  const source = allSources.find(s => s.id === id);
+  if (!source) return;
+  longPressSourceId = id;
+  document.getElementById('editModalInput').value = source.name;
+  document.getElementById('editModalType').value = source.type || '流动';
+  document.getElementById('editModal').classList.add('show');
+  setTimeout(() => document.getElementById('editModalInput').focus(), 100);
+}
+
+function hideEditModal() {
+  document.getElementById('editModal').classList.remove('show');
+  longPressSourceId = null;
+}
+
+document.getElementById('editModal').addEventListener('click', e => { if (e.target === e.currentTarget) hideEditModal(); });
+document.getElementById('editModalInput').addEventListener('keydown', e => { if (e.key === 'Enter') confirmEditSource(); });
+
+async function confirmEditSource() {
+  const name = document.getElementById('editModalInput').value.trim();
+  const type = document.getElementById('editModalType').value;
+  if (!name || !longPressSourceId) return;
+  try {
+    await fundApi.updateSource(longPressSourceId, name, type);
+    allSources = await fundApi.getSources();
+    hideEditModal();
+    renderAssets();
+  } catch (e) { alert('修改失败: ' + e.message); }
+}
+
+// ============ 删除类别弹窗 ============
+function showDeleteModal() {
+  const id = longPressSourceId;
+  hideActionModal();
+  const source = allSources.find(s => s.id === id);
+  if (!source) return;
+  longPressSourceId = id;
+  document.getElementById('deleteModalText').textContent = `确定要删除"${source.name}"吗？删除后相关记录也会被删除。`;
+  document.getElementById('deleteModal').classList.add('show');
+}
+
+function hideDeleteModal() {
+  document.getElementById('deleteModal').classList.remove('show');
+  longPressSourceId = null;
+}
+
+document.getElementById('deleteModal').addEventListener('click', e => { if (e.target === e.currentTarget) hideDeleteModal(); });
+
+async function confirmDeleteSource() {
+  if (!longPressSourceId) return;
+  try {
+    await fundApi.deleteSource(longPressSourceId);
+    allSources = await fundApi.getSources();
+    allRecords = allRecords.filter(r => r.sourceId !== longPressSourceId);
+    hideDeleteModal();
+    renderAssets();
+  } catch (e) { alert('删除失败: ' + e.message); }
+}
+
+// ============ 记录页面 ============
+function renderRecordPage() {
+  const container = document.getElementById('recordSection');
+  if (allSources.length === 0) {
+    container.innerHTML = '<div class="empty-state"><i class="fa-solid fa-pen-to-square"></i><p>请先添加资产</p></div>';
+    return;
+  }
+
+  const items = allSources.map(s => {
+    const records = allRecords.filter(r => r.sourceId === s.id && r.yearMonth === currentMonth);
+    const hasRecord = records.length > 0;
+    const amount = hasRecord ? records[records.length - 1].amount : '';
+    return { ...s, hasRecord, amount };
+  });
+
+  container.innerHTML = `
+    <div class="record-section">
+      <div class="record-header">
+        <div class="record-title">本月记录</div>
+        <div class="record-month">${currentMonth}</div>
+      </div>
+      <div class="record-grid">
+        ${items.map(item => `
+          <div class="record-card">
+            <div class="record-card-top">
+              <div class="record-card-icon"><i class="${item.icon || 'fa-solid fa-wallet'}"></i></div>
+              <div class="record-status ${item.hasRecord ? 'filled' : 'empty'}">${item.hasRecord ? '已填写' : '未填写'}</div>
+            </div>
+            <div class="record-card-name">${item.name}</div>
+            <input type="number" class="record-input" data-id="${item.id}" placeholder="¥0.00" value="${item.amount !== '' ? item.amount : ''}" inputmode="decimal">
+          </div>
+        `).join('')}
+      </div>
+      <button class="save-record-btn" onclick="saveMonthRecords()">保存本月记录</button>
+    </div>
+  `;
+}
+
+async function saveMonthRecords() {
+  const inputs = document.querySelectorAll('.record-input');
+  const records = [];
+  inputs.forEach(inp => {
+    const sourceId = inp.dataset.id;
+    const val = parseFloat(inp.value);
+    if (!isNaN(val)) {
+      records.push({ sourceId, amount: val });
+    }
+  });
+
+  if (records.length === 0) {
+    alert('请至少填写一条记录');
+    return;
+  }
+
+  try {
+    await fundApi.saveRecords(currentMonth, records);
+    allRecords = await fundApi.getAllRecords();
+    updateRecordBadge();
+    renderRecordPage();
+    const toast = document.createElement('div');
+    toast.className = 'save-toast';
+    toast.textContent = '保存成功';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 1500);
+  } catch (e) { alert('保存失败: ' + e.message); }
+}
+
+// ============ 数字键盘 ============
+let kbTarget = null;
+let kbValue = '';
+
+function showKeyboard(input) {
+  kbTarget = input;
+  kbValue = input.value || '';
+  updateKbPreview();
+  document.getElementById('numKeyboard').classList.add('show');
+}
+
+function hideKeyboard() {
+  document.getElementById('numKeyboard').classList.remove('show');
+  kbTarget = null;
+}
+
+function updateKbPreview() {
+  document.getElementById('kbPreview').textContent = kbValue || '0';
+}
+
+function kbInput(ch) {
+  if (ch === '.' && kbValue.includes('.')) return;
+  if (kbValue === '0' && ch !== '.') kbValue = ch;
+  else kbValue += ch;
+  if (kbTarget) kbTarget.value = kbValue;
+  updateKbPreview();
+}
+
+function kbBackspace() {
+  kbValue = kbValue.slice(0, -1);
+  if (kbTarget) kbTarget.value = kbValue;
+  updateKbPreview();
+}
+
+function kbClear() {
+  kbValue = '';
+  if (kbTarget) kbTarget.value = '';
+  updateKbPreview();
+}
+
+function kbConfirm() {
+  hideKeyboard();
+}
+
+// 绑定所有数字输入框
+document.addEventListener('click', e => {
+  const inp = e.target.closest('.record-input');
+  if (inp) {
+    showKeyboard(inp);
+    e.preventDefault();
+  }
+});
+
+// 点击键盘外部关闭
+document.addEventListener('click', e => {
+  if (!e.target.closest('.num-keyboard') && !e.target.closest('.record-input')) {
+    hideKeyboard();
+  }
+});
 
 // ============ 工具函数 ============
 function getCurrentYearMonth() {
@@ -173,4 +446,29 @@ function getAmountForMonth(sourceId, ym) {
 
 function fmtNum(n) {
   return Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function guessIcon(name) {
+  const n = name.toLowerCase();
+  if (n.includes('支付宝') || n.includes('alipay')) return 'fa-brands fa-alipay';
+  if (n.includes('京东') || n.includes('jd')) return 'fa-brands fa-jd';
+  if (n.includes('微信') || n.includes('wechat')) return 'fa-brands fa-weixin';
+  if (n.includes('农行') || n.includes('农业')) return 'fa-solid fa-leaf';
+  if (n.includes('建行') || n.includes('建设')) return 'fa-solid fa-building';
+  if (n.includes('工行') || n.includes('工商')) return 'fa-solid fa-industry';
+  if (n.includes('中行') || n.includes('中国银行')) return 'fa-solid fa-landmark';
+  if (n.includes('招商') || n.includes('招行')) return 'fa-solid fa-hands-holding-circle';
+  if (n.includes('银行卡') || n.includes('储蓄')) return 'fa-solid fa-credit-card';
+  if (n.includes('股票') || n.includes('证券') || n.includes('炒股')) return 'fa-solid fa-arrow-trend-up';
+  if (n.includes('基金') || n.includes('理财') || n.includes('定投')) return 'fa-solid fa-chart-line';
+  if (n.includes('现金') || n.includes('钱包')) return 'fa-solid fa-wallet';
+  if (n.includes('银行') || n.includes('存款')) return 'fa-solid fa-building-columns';
+  if (n.includes('利息') || n.includes('收益') || n.includes('分红')) return 'fa-solid fa-coins';
+  if (n.includes('社保') || n.includes('公积金')) return 'fa-solid fa-shield-halved';
+  if (n.includes('定期') || n.includes('国债')) return 'fa-solid fa-piggy-bank';
+  if (n.includes('其他') || n.includes('other')) {
+    const others = ['fa-solid fa-ellipsis', 'fa-solid fa-asterisk', 'fa-solid fa-folder', 'fa-solid fa-tag', 'fa-solid fa-bookmark', 'fa-solid fa-thumbtack'];
+    return others[Math.floor(Math.random() * others.length)];
+  }
+  return ICONS[allSources.length % ICONS.length];
 }

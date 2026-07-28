@@ -82,10 +82,10 @@ const fundApi = {
     return data || [];
   },
 
-  addSource: async (name, type) => {
+  addSource: async (name, type, icon) => {
     const sb = getSupabase();
     const user = await getCurrentUser();
-    const { data, error } = await sb.from('fund_sources').insert({ name, type: type || '流动', user_id: user.id }).select().single();
+    const { data, error } = await sb.from('fund_sources').insert({ name, type: type || '流动', icon: icon || 'fa-solid fa-wallet', user_id: user.id }).select().single();
     if (error) throw error;
     return data;
   },
@@ -93,6 +93,12 @@ const fundApi = {
   deleteSource: async (id) => {
     const sb = getSupabase();
     const { error } = await sb.from('fund_sources').delete().eq('id', id);
+    if (error) throw error;
+  },
+
+  updateSource: async (id, name, type) => {
+    const sb = getSupabase();
+    const { error } = await sb.from('fund_sources').update({ name, type }).eq('id', id);
     if (error) throw error;
   },
 
