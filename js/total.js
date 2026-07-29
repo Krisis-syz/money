@@ -9,7 +9,7 @@ let historyShowCount = 3;
 let categoryMonth = currentMonth;
 let catPieChart = null;
 let assetVizMode = 'pie';
-let assetSortMode = 'amount';
+let assetSortMode = 'pnl';
 let assetMonth = currentMonth;
 let assetPieChart = null;
 let monthInputTarget = null;
@@ -400,8 +400,8 @@ function renderAssetBar(container) {
   container.style.height = 'auto';
   container.innerHTML = `
     <div class="sort-btns">
-      <button class="sort-btn ${assetSortMode === 'amount' ? 'active' : ''}" onclick="setAssetSort('amount')">按金额</button>
       <button class="sort-btn ${assetSortMode === 'pnl' ? 'active' : ''}" onclick="setAssetSort('pnl')">按收支</button>
+      <button class="sort-btn ${assetSortMode === 'amount' ? 'active' : ''}" onclick="setAssetSort('amount')">按金额</button>
     </div>
     <div class="bar-list">
       ${items.map((item, idx) => {
