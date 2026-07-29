@@ -458,13 +458,13 @@ function renderAssetPie(container) {
   // 布局：左饼图 + 右图例
   container.style.height = 'auto';
   container.innerHTML = `
-    <div style="display:flex;gap:6px;align-items:center;overflow:hidden;">
-      <div style="flex:0 0 120px;height:120px;"><canvas id="assetPieCanvas"></canvas></div>
-      <div style="flex:1;min-width:0;display:grid;grid-template-columns:1fr 1fr;gap:3px 6px;">
+    <div style="display:flex;gap:12px;align-items:center;overflow:hidden;">
+      <div style="flex:0 0 150px;height:150px;"><canvas id="assetPieCanvas"></canvas></div>
+      <div style="flex:1;min-width:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;">
         ${items.map(item => {
           const pct = total > 0 ? (item.amount / total * 100).toFixed(1) : '0.0';
-          return `<div style="display:flex;align-items:center;gap:3px;font-size:0.68rem;color:#666;min-width:0;">
-            <span style="width:7px;height:7px;border-radius:2px;background:${item.color};flex-shrink:0;"></span>
+          return `<div style="display:flex;align-items:center;gap:4px;font-size:0.72rem;color:#666;min-width:0;">
+            <span style="width:8px;height:8px;border-radius:2px;background:${item.color};flex-shrink:0;"></span>
             <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.name} ${pct}%</span>
           </div>`;
         }).join('')}
