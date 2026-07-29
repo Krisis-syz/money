@@ -81,16 +81,46 @@ function renderCharts(charts) {
     return;
   }
 
+  // 生成月份范围标题
+  const now = new Date();
+  const startMonth = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+  const titleRange = `${startMonth.getFullYear()}年${startMonth.getMonth() + 1}月 - ${now.getFullYear()}年${now.getMonth() + 1}月`;
+
   charts.forEach(chart => {
     try {
       const container = document.querySelector(`[data-chart-id="${chart.id}"]`);
       if (!container) return;
 
+      // 根据类型生成标题
+      let title = '';
+      if (chart.type === 'trend') {
+        if (chart.param) {
+          // 单资产趋势图，查找资产名称
+          const source = allSources.find(s => s.id === chart.param);
+          const sourceName = source ? source.name : '未知资产';
+          title = `${titleRange}${sourceName}资产趋势图`;
+        } else {
+          title = `${titleRange}总资产趋势图`;
+        }
+      } else if (chart.type === 'pie') {
+        title = `${now.getFullYear()}年${now.getMonth() + 1}月资产分布`;
+      } else if (chart.type === 'bar') {
+        title = `${now.getFullYear()}年${now.getMonth() + 1}月资产明细`;
+      }
+
+      // 添加标题
+      if (title) {
+        const titleEl = document.createElement('div');
+        titleEl.style.cssText = 'text-align:center;font-size:0.78rem;color:#6b3fa0;font-weight:500;margin-bottom:8px;';
+        titleEl.textContent = title;
+        container.appendChild(titleEl);
+      }
+
       // 创建 canvas
       const canvas = document.createElement('canvas');
       canvas.id = chart.id;
       canvas.style.width = '100%';
-      canvas.style.maxHeight = '200px';
+      canvas.style.maxHeight = '220px';
       container.appendChild(canvas);
 
       // 根据类型渲染图表
@@ -229,10 +259,22 @@ function renderPieChart(canvas) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      cutout: '58%',
-      layout: { padding: { top: 10, bottom: 10 } },
+      cutout: '55%',
+      layout: { padding: { top: 10, bottom: 5 } },
       plugins: {
-        legend: { display: false },
+        legend: {
+          display: true,
+          position: 'bottom',
+          labels: {
+            boxWidth: 10,
+            boxHeight: 10,
+            padding: 12,
+            font: { size: 11 },
+            color: '#2d2d3a',
+            usePointStyle: true,
+            pointStyle: 'circle'
+          }
+        },
         tooltip: {
           callbacks: {
             title: () => '',
