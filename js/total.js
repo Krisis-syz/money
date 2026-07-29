@@ -543,10 +543,16 @@ function renderAssetBar(container) {
   }
 
   container.style.height = 'auto';
+  const sortLabel = assetSortMode === 'pnl' ? '按收支' : '按金额';
   container.innerHTML = `
-    <div class="sort-btns">
-      <button class="sort-btn ${assetSortMode === 'pnl' ? 'active' : ''}" onclick="setAssetSort('pnl')">按收支</button>
-      <button class="sort-btn ${assetSortMode === 'amount' ? 'active' : ''}" onclick="setAssetSort('amount')">按金额</button>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+      <div class="dropdown-wrap">
+        <button class="dropdown-btn" onclick="toggleSortDropdown()">${sortLabel} <i class="fa-solid fa-chevron-down"></i></button>
+        <div class="dropdown-menu" id="sortDropdown">
+          <div class="dropdown-item" onclick="setAssetSort('pnl')">按收支</div>
+          <div class="dropdown-item" onclick="setAssetSort('amount')">按金额</div>
+        </div>
+      </div>
     </div>
     <div class="bar-list">
       ${items.map((item, idx) => {
@@ -581,8 +587,20 @@ function setVizMode(mode) {
 
 function setAssetSort(mode) {
   assetSortMode = mode;
+  document.getElementById('sortDropdown').classList.remove('show');
   renderAssetViz();
 }
+
+function toggleSortDropdown() {
+  document.getElementById('sortDropdown').classList.toggle('show');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#sortDropdown') && !e.target.closest('.dropdown-btn')) {
+    const el = document.getElementById('sortDropdown');
+    if (el) el.classList.remove('show');
+  }
+});
 
 function changeAssetMonth(delta) {
   const [y, m] = assetMonth.split('-').map(Number);
