@@ -12,6 +12,7 @@ let assetVizMode = 'pie';
 let assetSortMode = 'amount';
 let assetMonth = currentMonth;
 let assetPieChart = null;
+let monthInputTarget = null;
 
 const TYPE_COLORS = { '流动': '#a78bfa', '基金': '#60a5fa', '股票': '#f472b6' };
 
@@ -181,11 +182,23 @@ function setTrendMode(mode) {
 
 function setRange(range) {
   chartRange = range;
-  document.querySelectorAll('.range-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.range === range);
-  });
+  const labels = { '1y': '近一年', '3y': '近三年', 'all': '全部' };
+  document.getElementById('rangeBtn').innerHTML = labels[range] + ' <i class="fa-solid fa-chevron-down"></i>';
+  hideRangeDropdown();
   renderTrendChart();
 }
+
+function toggleRangeDropdown() {
+  document.getElementById('rangeDropdown').classList.toggle('show');
+}
+
+function hideRangeDropdown() {
+  document.getElementById('rangeDropdown').classList.remove('show');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.dropdown-wrap')) hideRangeDropdown();
+});
 
 // ============ 历史记录 ============
 function renderHistory() {
@@ -287,7 +300,10 @@ function changeCatMonth(delta) {
   const [y, m] = categoryMonth.split('-').map(Number);
   const d = new Date(y, m - 1 + delta, 1);
   const newMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-  if (newMonth > currentMonth) return;
+  if (newMonth > currentMonth) {
+    alert('不能选择未来的时间');
+    return;
+  }
   categoryMonth = newMonth;
   renderCategoryPie();
 }
@@ -352,8 +368,35 @@ function renderAssetBar(container) {
     return { id: s.id, name: s.name, amount, pnl };
   });
 
-  if (assetSortMode === 'amount') items.sort((a, b) => b.amount - a.amount);
-  else items.sort((a, b) => b.pnl - a.pnl);
+  if (assetSortMode === 'amount') {
+    items.sort((a, b) => b.amount - a.amount);
+  } else {
+    // 按收支排序：正数在前（大到小），负数在后（小到大）
+    items.sort((a, b) => {
+      if (a.pnl >= 0 && b.pnl < 0) return -1;
+      if (a.pnl < 0 && b.pnl >= 0) return 1;
+      if (a.pnl >= 0) return b.pnl - a.pnl;
+      return a.pnl - b.pnl;
+    });
+  }
+
+  // 计算柱形宽度
+  let barWidths = [];
+  if (assetSortMode === 'amount') {
+    const maxAmount = items.length > 0 ? items[0].amount : 1;
+    barWidths = items.map(i => maxAmount > 0 ? (i.amount / maxAmount * 100) : 0);
+  } else {
+    // 按收支：正数组和负数组分别计算
+    const positives = items.filter(i => i.pnl >= 0);
+    const negatives = items.filter(i => i.pnl < 0);
+    const maxPos = positives.length > 0 ? positives[0].pnl : 0;
+    const maxNeg = negatives.length > 0 ? Math.abs(negatives[0].pnl) : 0;
+
+    barWidths = items.map(i => {
+      if (i.pnl >= 0) return maxPos > 0 ? (i.pnl / maxPos * 100) : 0;
+      else return maxNeg > 0 ? (Math.abs(i.pnl) / maxNeg * 100) : 0;
+    });
+  }
 
   container.style.height = 'auto';
   container.innerHTML = `
@@ -362,8 +405,16 @@ function renderAssetBar(container) {
       <button class="sort-btn ${assetSortMode === 'pnl' ? 'active' : ''}" onclick="setAssetSort('pnl')">按收支</button>
     </div>
     <div class="bar-list">
-      ${items.map(item => {
-        const bgClass = item.pnl > 0 ? 'positive' : item.pnl < 0 ? 'negative' : 'flat';
+      ${items.map((item, idx) => {
+        let bgClass, barColor;
+        if (assetSortMode === 'amount') {
+          bgClass = 'flat';
+          barColor = '#ede5f4';
+        } else {
+          if (item.pnl > 0) { bgClass = 'positive'; barColor = 'rgba(239,68,68,0.12)'; }
+          else if (item.pnl < 0) { bgClass = 'negative'; barColor = 'rgba(34,197,94,0.12)'; }
+          else { bgClass = 'flat'; barColor = 'rgba(156,163,175,0.08)'; }
+        }
         const pnlColor = item.pnl > 0 ? '#ef4444' : item.pnl < 0 ? '#22c55e' : '#9ca3af';
         return `<div class="bar-row">
           <div class="bar-bg ${bgClass}"></div>
@@ -393,7 +444,64 @@ function changeAssetMonth(delta) {
   const [y, m] = assetMonth.split('-').map(Number);
   const d = new Date(y, m - 1 + delta, 1);
   const newMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-  if (newMonth > currentMonth) return;
+  if (newMonth > currentMonth) {
+    alert('不能选择未来的时间');
+    return;
+  }
   assetMonth = newMonth;
   renderAssetViz();
 }
+
+// ============ 月份输入弹窗 ============
+function showMonthInput(target) {
+  monthInputTarget = target;
+  const current = target === 'cat' ? categoryMonth : assetMonth;
+  const [y, m] = current.split('-');
+  document.getElementById('monthInputYear').value = y;
+  document.getElementById('monthInputMonth').value = m;
+  document.getElementById('monthInputError').textContent = '';
+  document.getElementById('monthInputOverlay').classList.add('show');
+}
+
+function hideMonthInput() {
+  document.getElementById('monthInputOverlay').classList.remove('show');
+  monthInputTarget = null;
+}
+
+function confirmMonthInput() {
+  const year = document.getElementById('monthInputYear').value.trim();
+  const month = document.getElementById('monthInputMonth').value.trim();
+  const errorEl = document.getElementById('monthInputError');
+
+  if (!/^\d{4}$/.test(year)) {
+    errorEl.textContent = '请输入4位年份';
+    return;
+  }
+  if (!/^\d{1,2}$/.test(month) || parseInt(month) < 1 || parseInt(month) > 12) {
+    errorEl.textContent = '请输入1-12的月份';
+    return;
+  }
+
+  const y = parseInt(year);
+  const m = parseInt(month);
+  const newMonth = `${y}-${String(m).padStart(2, '0')}`;
+
+  if (newMonth > currentMonth) {
+    errorEl.textContent = '不能选择未来的时间';
+    return;
+  }
+
+  if (monthInputTarget === 'cat') {
+    categoryMonth = newMonth;
+    renderCategoryPie();
+  } else {
+    assetMonth = newMonth;
+    renderAssetViz();
+  }
+
+  hideMonthInput();
+}
+
+document.getElementById('monthInputOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) hideMonthInput();
+});

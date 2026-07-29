@@ -344,7 +344,7 @@
     }
 
     .bar-amount {
-      width: 90px;
+      width: 100px;
       text-align: right;
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.82rem;
@@ -355,7 +355,7 @@
     }
 
     .bar-pnl {
-      width: 80px;
+      width: 90px;
       text-align: right;
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.82rem;
@@ -395,6 +395,136 @@
     }
 
     .empty-hint i { font-size: 1.5rem; display: block; margin-bottom: 8px; opacity: 0.4; }
+
+    /* ========== 下拉菜单 ========== */
+    .dropdown-wrap {
+      position: relative;
+      margin-left: auto;
+    }
+
+    .dropdown-btn {
+      padding: 5px 12px;
+      border: 1px solid rgba(148,111,178,0.15);
+      border-radius: 12px;
+      background: transparent;
+      color: #6b3fa0;
+      font-size: 0.72rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .dropdown-btn i { font-size: 0.6rem; }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 4px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      min-width: 100px;
+      z-index: 10;
+      display: none;
+      overflow: hidden;
+    }
+
+    .dropdown-menu.show { display: block; }
+
+    .dropdown-item {
+      padding: 10px 14px;
+      font-size: 0.78rem;
+      color: #2d2d3a;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .dropdown-item:active { background: #F7F2FB; }
+
+    /* ========== 月份输入弹窗 ========== */
+    .month-input-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+    .month-input-overlay.show { display: flex; }
+
+    .month-input-box {
+      background: #fff;
+      border-radius: 20px;
+      width: 85%;
+      max-width: 300px;
+      padding: 24px 20px;
+      animation: scaleIn 0.25s ease;
+    }
+
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+    .month-input-title {
+      font-size: 1rem;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 16px;
+      color: #2d2d3a;
+    }
+
+    .month-input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .month-input-field {
+      flex: 1;
+      padding: 12px;
+      background: #F7F2FB;
+      border: 1px solid rgba(148,111,178,0.2);
+      border-radius: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem;
+      text-align: center;
+      color: #2d2d3a;
+    }
+    .month-input-field:focus { outline: none; border-color: #946FB2; }
+
+    .month-input-label {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-bottom: 6px;
+    }
+
+    .month-input-error {
+      color: #ef4444;
+      font-size: 0.78rem;
+      text-align: center;
+      margin-bottom: 12px;
+      min-height: 18px;
+    }
+
+    .month-input-btns { display: flex; gap: 10px; }
+
+    .month-input-btn {
+      flex: 1;
+      padding: 11px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+    }
+
+    .month-input-cancel { background: #F0E9F6; color: #6b3fa0; }
+    .month-input-confirm { background: #946FB2; color: #fff; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -419,10 +549,13 @@
           <button class="module-tab active" onclick="setTrendMode('total')">总资金</button>
           <button class="module-tab" onclick="setTrendMode('category')">分类占比</button>
         </div>
-        <div class="range-group">
-          <button class="range-btn" data-range="all" onclick="setRange('all')">全部</button>
-          <button class="range-btn" data-range="3y" onclick="setRange('3y')">近三年</button>
-          <button class="range-btn active" data-range="1y" onclick="setRange('1y')">近一年</button>
+        <div class="dropdown-wrap">
+          <button class="dropdown-btn" id="rangeBtn" onclick="toggleRangeDropdown()">近一年 <i class="fa-solid fa-chevron-down"></i></button>
+          <div class="dropdown-menu" id="rangeDropdown">
+            <div class="dropdown-item" onclick="setRange('1y')">近一年</div>
+            <div class="dropdown-item" onclick="setRange('3y')">近三年</div>
+            <div class="dropdown-item" onclick="setRange('all')">全部</div>
+          </div>
         </div>
       </div>
       <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
@@ -437,7 +570,7 @@
         <div class="module-title">分类占比</div>
         <div class="month-selector">
           <button class="month-btn" onclick="changeCatMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
-          <span class="month-text" id="catMonthText">--</span>
+          <span class="month-text" id="catMonthText" onclick="showMonthInput('cat')" style="cursor:pointer;">--</span>
           <button class="month-btn" onclick="changeCatMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
         </div>
       </div>
@@ -450,16 +583,38 @@
       <div class="module-header">
         <div class="module-title">各资产</div>
         <div class="module-tabs" id="vizTabs">
-          <button class="module-tab active" onclick="setVizMode('pie')">饼图</button>
-          <button class="module-tab" onclick="setVizMode('bar')">柱形图</button>
+          <button class="module-tab active" onclick="setVizMode('pie')">占比</button>
+          <button class="module-tab" onclick="setVizMode('bar')">排行榜</button>
         </div>
         <div class="month-selector">
           <button class="month-btn" onclick="changeAssetMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
-          <span class="month-text" id="assetMonthText">--</span>
+          <span class="month-text" id="assetMonthText" onclick="showMonthInput('asset')" style="cursor:pointer;">--</span>
           <button class="month-btn" onclick="changeAssetMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
         </div>
       </div>
       <div id="vizContent"></div>
+    </div>
+  </div>
+
+  <!-- 月份输入弹窗 -->
+  <div class="month-input-overlay" id="monthInputOverlay">
+    <div class="month-input-box">
+      <div class="month-input-title">选择月份</div>
+      <div class="month-input-row">
+        <div>
+          <div class="month-input-label">年份</div>
+          <input type="text" class="month-input-field" id="monthInputYear" placeholder="2026" maxlength="4" inputmode="numeric">
+        </div>
+        <div>
+          <div class="month-input-label">月份</div>
+          <input type="text" class="month-input-field" id="monthInputMonth" placeholder="07" maxlength="2" inputmode="numeric">
+        </div>
+      </div>
+      <div class="month-input-error" id="monthInputError"></div>
+      <div class="month-input-btns">
+        <button class="month-input-btn month-input-cancel" onclick="hideMonthInput()">取消</button>
+        <button class="month-input-btn month-input-confirm" onclick="confirmMonthInput()">确定</button>
+      </div>
     </div>
   </div>
 
