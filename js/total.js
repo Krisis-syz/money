@@ -388,10 +388,10 @@ function renderCategoryPie() {
     const arrow = diff > 0.1 ? '↑' : diff < -0.1 ? '↓' : '→';
     const color = diff > 0.1 ? '#ef4444' : diff < -0.1 ? '#22c55e' : '#9ca3af';
     const typeColor = TYPE_COLORS[tp];
-    const sign = diff >= 0 ? '+' : '';
+    const sign = diff >= 0 ? '+' : '-';
     return `<div class="cat-change">
       <div class="cat-change-name"><span class="cat-dot" style="background:${typeColor}"></span>${tp}</div>
-      <div class="cat-change-val">${sign}${fmtNum(diff)}</div>
+      <div class="cat-change-val" style="color:${color}">${sign}${fmtNum(diff)}</div>
       <div class="cat-change-pct" style="color:${color}">${arrow}${pctChange}%</div>
     </div>`;
   }).join('');
