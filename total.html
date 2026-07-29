@@ -628,24 +628,26 @@
     <div class="module">
       <div class="module-header">
         <div class="module-title">资产分布</div>
+        <div class="dropdown-wrap">
+          <button class="dropdown-btn" id="distModeBtn" onclick="toggleDistDropdown()">按大类 <i class="fa-solid fa-chevron-down"></i></button>
+          <div class="dropdown-menu" id="distDropdown">
+            <div class="dropdown-item" onclick="setDistMode('type')">按大类</div>
+            <div class="dropdown-item" onclick="setDistMode('asset')">按小类</div>
+          </div>
+        </div>
         <div class="month-selector">
           <button class="month-btn" onclick="changeCatMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
           <span class="month-text" id="catMonthText" onclick="showMonthInput('cat')" style="cursor:pointer;">--</span>
           <button class="month-btn" onclick="changeCatMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
         </div>
       </div>
-      <div class="chart-wrap" style="height:240px;"><canvas id="catPieChart"></canvas></div>
-      <div class="cat-changes" id="catChanges"></div>
+      <div id="distContent"></div>
     </div>
 
-    <!-- 各资产可视化 -->
+    <!-- 资产详情 -->
     <div class="module">
       <div class="module-header">
         <div class="module-title">资产详情</div>
-        <div class="module-tabs" id="vizTabs">
-          <button class="module-tab active" onclick="setVizMode('bar')">排行榜</button>
-          <button class="module-tab" onclick="setVizMode('pie')">占比</button>
-        </div>
         <div class="month-selector">
           <button class="month-btn" onclick="changeAssetMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
           <span class="month-text" id="assetMonthText" onclick="showMonthInput('asset')" style="cursor:pointer;">--</span>

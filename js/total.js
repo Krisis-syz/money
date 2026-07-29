@@ -8,7 +8,7 @@ let trendChart = null;
 let historyShowCount = 3;
 let categoryMonth = currentMonth;
 let catPieChart = null;
-let assetVizMode = 'bar';
+let distMode = 'type';
 let assetSortMode = 'pnl';
 let assetMonth = currentMonth;
 let assetPieChart = null;
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderTotalCard();
   renderTrendChart();
   renderHistory();
-  renderCategoryPie();
+  renderDistContent();
   renderAssetViz();
 });
 
@@ -274,20 +274,23 @@ function showMoreHistory() {
   renderHistory();
 }
 
-// ============ 分类占比饼图 ============
-function renderCategoryPie() {
+// ============ 资产分布 ============
+function renderDistContent() {
   document.getElementById('catMonthText').textContent = categoryMonth;
+  const container = document.getElementById('distContent');
+  if (distMode === 'type') {
+    renderDistType(container);
+  } else {
+    renderDistAsset(container);
+  }
+}
 
-  const ctx = document.getElementById('catPieChart');
-  if (!ctx) return;
-  if (catPieChart) catPieChart.destroy();
-
+function renderDistType(container) {
   const typeTotals = getTypeTotals(categoryMonth);
   const total = getMonthTotal(categoryMonth);
   const labels = Object.keys(typeTotals);
   const values = Object.values(typeTotals);
   const colors = labels.map(t => TYPE_COLORS[t]);
-
 
   // 自定义插件：画引线 + 标注文字 + 横线分隔
   const catLabelPlugin = {
@@ -306,17 +309,14 @@ function renderCategoryPie() {
         const pct = total > 0 ? (val / total * 100).toFixed(0) : 0;
         const label = labels[i];
 
-        // 引线起点：饼图边缘
         const sx = centerX + Math.cos(angle) * outerR;
         const sy = centerY + Math.sin(angle) * outerR;
-        // 引线终点：向外延伸
         const lineLen = 22;
         const ex = centerX + Math.cos(angle) * (outerR + lineLen);
         const ey = centerY + Math.sin(angle) * (outerR + lineLen);
 
         ctx.save();
 
-        // 画斜线（饼图边缘 → 终点）
         ctx.beginPath();
         ctx.moveTo(sx, sy);
         ctx.lineTo(ex, ey);
@@ -324,22 +324,17 @@ function renderCategoryPie() {
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        // 根据角度决定左右
         const isRight = Math.cos(angle) >= 0;
-        const gap = 6; // 斜线终点到文字的间距
+        const gap = 6;
 
-
-        // 横线：从斜线终点开始，向文字方向延伸
-        const horizStartX = ex;
         const horizEndX = isRight ? ex + gap : ex - gap;
         ctx.beginPath();
-        ctx.moveTo(horizStartX, ey);
+        ctx.moveTo(ex, ey);
         ctx.lineTo(horizEndX, ey);
         ctx.strokeStyle = '#ccc';
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        // 文字X：横线末端再偏移
         const textX = isRight ? horizEndX + 3 : horizEndX - 3;
         const line1 = '¥' + fmtNum(val);
         const line2 = label + '  ' + pct + '%';
@@ -347,19 +342,16 @@ function renderCategoryPie() {
         ctx.textBaseline = 'middle';
         ctx.textAlign = isRight ? 'left' : 'right';
 
-        // 测量文字宽度，横线与文字等长
         ctx.font = '500 11px "JetBrains Mono", monospace';
         const w1 = ctx.measureText(line1).width;
         ctx.font = '500 10px Outfit, sans-serif';
         const w2 = ctx.measureText(line2).width;
         const lineW = Math.max(w1, w2) + 8;
 
-        // 第一行（金额）
         ctx.font = '500 11px "JetBrains Mono", monospace';
         ctx.fillStyle = '#666';
         ctx.fillText(line1, textX, ey - 8);
 
-        // 横线分隔（与文字等长）
         ctx.beginPath();
         ctx.moveTo(ex, ey);
         ctx.lineTo(ex + (isRight ? lineW : -lineW), ey);
@@ -367,7 +359,6 @@ function renderCategoryPie() {
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        // 第二行（类型 + 百分比）
         ctx.font = '500 10px Outfit, sans-serif';
         ctx.fillStyle = '#999';
         ctx.fillText(line2, textX, ey + 9);
@@ -377,12 +368,13 @@ function renderCategoryPie() {
     }
   };
 
+  if (catPieChart) catPieChart.destroy();
+  container.innerHTML = '<div class="chart-wrap" style="height:240px;"><canvas id="catPieChart"></canvas></div><div class="cat-changes" id="catChanges"></div>';
+  const ctx = document.getElementById('catPieChart');
+
   catPieChart = new Chart(ctx, {
     type: 'doughnut',
-    data: {
-      labels,
-      datasets: [{ data: values, backgroundColor: colors, borderWidth: 0 }]
-    },
+    data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 0 }] },
     plugins: [catLabelPlugin],
     options: {
       responsive: true, maintainAspectRatio: false,
@@ -390,22 +382,15 @@ function renderCategoryPie() {
       layout: { padding: { top: 20, bottom: 10, left: 40, right: 40 } },
       plugins: {
         legend: { display: false },
-        tooltip: {
-          callbacks: {
-            title: () => '',
-            label: (ctx) => ctx.label + '：¥' + fmtNum(ctx.raw)
-          }
-        }
+        tooltip: { callbacks: { title: () => '', label: (ctx) => ctx.label + '：¥' + fmtNum(ctx.raw) } }
       }
     }
   });
 
-  // 计算环比变化
   const prevTypeTotals = getTypeTotals(getPrevMonth(categoryMonth));
   const prevTotal = getMonthTotal(getPrevMonth(categoryMonth));
 
-  const changesEl = document.getElementById('catChanges');
-  changesEl.innerHTML = labels.map((tp, i) => {
+  document.getElementById('catChanges').innerHTML = labels.map((tp, i) => {
     const cur = values[i];
     const prev = prevTypeTotals[tp] || 0;
     const diff = cur - prev;
@@ -422,52 +407,20 @@ function renderCategoryPie() {
   }).join('');
 }
 
-function changeCatMonth(delta) {
-  const [y, m] = categoryMonth.split('-').map(Number);
-  const d = new Date(y, m - 1 + delta, 1);
-  const newMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-  if (newMonth > currentMonth) {
-    alert('不能选择未来的时间');
-    return;
-  }
-  categoryMonth = newMonth;
-  renderCategoryPie();
-}
-
-// ============ 各资产可视化 ============
-function renderAssetViz() {
-  document.getElementById('assetMonthText').textContent = assetMonth;
-
-  const container = document.getElementById('vizContent');
-  if (allSources.length === 0) {
-    container.innerHTML = '<div class="empty-hint"><i class="fa-solid fa-chart-pie"></i>暂无资产</div>';
-    return;
-  }
-
-  if (assetVizMode === 'pie') {
-    renderAssetPie(container);
-  } else {
-    renderAssetBar(container);
-  }
-}
-
-function renderAssetPie(container) {
+function renderDistAsset(container) {
   const COLORS = ['#946FB2', '#6366f1', '#ec4899', '#14b8a6', '#f59e0b', '#3b82f6', '#ef4444', '#22c55e'];
 
   const items = allSources.map((s, i) => ({
     name: s.name,
-    icon: s.icon || 'fa-solid fa-wallet',
-    amount: getSourceAmount(s.id, assetMonth),
+    amount: getSourceAmount(s.id, categoryMonth),
     color: COLORS[i % COLORS.length]
   })).filter(i => i.amount > 0).sort((a, b) => b.amount - a.amount);
 
   const total = items.reduce((s, i) => s + i.amount, 0);
 
-  // 布局：左饼图 + 右图例
-  container.style.height = 'auto';
   container.innerHTML = `
     <div style="display:flex;gap:16px;align-items:center;justify-content:center;padding:0 4px;">
-      <div style="flex:0 0 180px;height:180px;"><canvas id="assetPieCanvas"></canvas></div>
+      <div style="flex:0 0 180px;height:180px;"><canvas id="distAssetCanvas"></canvas></div>
       <div style="display:flex;flex-direction:column;gap:10px;">
         ${items.map(item => {
           const pct = total > 0 ? (item.amount / total * 100).toFixed(1) : '0.0';
@@ -481,8 +434,8 @@ function renderAssetPie(container) {
     </div>
   `;
 
-  const pieCtx = document.getElementById('assetPieCanvas');
   if (assetPieChart) assetPieChart.destroy();
+  const pieCtx = document.getElementById('distAssetCanvas');
 
   assetPieChart = new Chart(pieCtx, {
     type: 'doughnut',
@@ -511,6 +464,47 @@ function renderAssetPie(container) {
       }
     }
   });
+}
+
+function changeCatMonth(delta) {
+  const [y, m] = categoryMonth.split('-').map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  const newMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  if (newMonth > currentMonth) {
+    alert('不能选择未来的时间');
+    return;
+  }
+  categoryMonth = newMonth;
+  renderDistContent();
+}
+
+function setDistMode(mode) {
+  distMode = mode;
+  document.getElementById('distModeBtn').innerHTML = (mode === 'type' ? '按大类' : '按小类') + ' <i class="fa-solid fa-chevron-down"></i>';
+  document.getElementById('distDropdown').classList.remove('show');
+  renderDistContent();
+}
+
+function toggleDistDropdown() {
+  document.getElementById('distDropdown').classList.toggle('show');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#distDropdown') && !e.target.closest('#distModeBtn')) {
+    const el = document.getElementById('distDropdown');
+    if (el) el.classList.remove('show');
+  }
+});
+
+// ============ 资产详情（排行榜） ============
+function renderAssetViz() {
+  document.getElementById('assetMonthText').textContent = assetMonth;
+  const container = document.getElementById('vizContent');
+  if (allSources.length === 0) {
+    container.innerHTML = '<div class="empty-hint"><i class="fa-solid fa-chart-pie"></i>暂无资产</div>';
+    return;
+  }
+  renderAssetBar(container);
 }
 
 function renderAssetBar(container) {
@@ -583,14 +577,6 @@ function renderAssetBar(container) {
       }).join('')}
     </div>
   `;
-}
-
-function setVizMode(mode) {
-  assetVizMode = mode;
-  document.querySelectorAll('#vizTabs .module-tab').forEach(btn => {
-    btn.classList.toggle('active', btn.textContent === (mode === 'pie' ? '占比' : '排行榜'));
-  });
-  renderAssetViz();
 }
 
 function setAssetSort(mode) {
