@@ -417,7 +417,6 @@
     /* ========== 下拉菜单 ========== */
     .dropdown-wrap {
       position: relative;
-      margin-left: auto;
     }
 
     .dropdown-btn {
@@ -627,6 +626,7 @@
     <!-- 资产分布饼图 -->
     <div class="module">
       <div class="module-header">
+        <div class="module-title">资产分布</div>
         <div class="dropdown-wrap">
           <button class="dropdown-btn" id="distModeBtn" onclick="toggleDistDropdown()">按大类 <i class="fa-solid fa-chevron-down"></i></button>
           <div class="dropdown-menu" id="distDropdown">
@@ -634,7 +634,6 @@
             <div class="dropdown-item" onclick="setDistMode('asset')">按小类</div>
           </div>
         </div>
-        <div class="module-title">资产分布</div>
         <div class="month-selector">
           <button class="month-btn" onclick="changeCatMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
           <span class="month-text" id="catMonthText" onclick="showMonthInput('cat')" style="cursor:pointer;">--</span>
@@ -647,6 +646,7 @@
     <!-- 资产详情 -->
     <div class="module">
       <div class="module-header">
+        <div class="module-title">资产详情</div>
         <div class="dropdown-wrap">
           <button class="dropdown-btn" id="sortModeBtn" onclick="toggleSortDropdown()">按收支 <i class="fa-solid fa-chevron-down"></i></button>
           <div class="dropdown-menu" id="sortDropdown">
@@ -654,7 +654,6 @@
             <div class="dropdown-item" onclick="setAssetSort('amount')">按金额</div>
           </div>
         </div>
-        <div class="module-title">资产详情</div>
         <div class="month-selector">
           <button class="month-btn" onclick="changeAssetMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
           <span class="month-text" id="assetMonthText" onclick="showMonthInput('asset')" style="cursor:pointer;">--</span>
