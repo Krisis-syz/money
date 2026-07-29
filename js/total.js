@@ -302,7 +302,7 @@ function renderCategoryPie() {
         // 根据角度决定左右
         const isRight = Math.cos(angle) >= 0;
         const gap = 6; // 斜线终点到文字的间距
-        const sepW = 30; // 横线半宽
+        const sepW = 44; // 横线半宽
 
         // 横线：从斜线终点开始，向文字方向延伸
         const horizStartX = ex;
