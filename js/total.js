@@ -156,7 +156,7 @@ function renderTrendChart() {
     data: { labels, datasets },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: !isTotal, position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 4, font: { size: 10 }, padding: 12 } } },
+      plugins: { legend: { display: !isTotal, position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 2, font: { size: 10 }, padding: 14 } } },
       scales: {
         x: { grid: { display: false }, ticks: { maxTicksLimit: 6, color: '#9ca3af', font: { size: 10 } } },
         y: {
@@ -364,9 +364,10 @@ function renderCategoryPie() {
       cutout: '60%',
       layout: { padding: { top: 20, bottom: 10, left: 40, right: 40 } },
       plugins: {
-        legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 11 }, padding: 12 } },
+        legend: { display: false },
         tooltip: {
           callbacks: {
+            title: () => '',
             label: (ctx) => ctx.label + '：¥' + fmtNum(ctx.raw)
           }
         }
@@ -386,10 +387,12 @@ function renderCategoryPie() {
     const pctChange = prev > 0 ? (diff / prev * 100).toFixed(1) : '0.0';
     const arrow = diff > 0.1 ? '↑' : diff < -0.1 ? '↓' : '→';
     const color = diff > 0.1 ? '#ef4444' : diff < -0.1 ? '#22c55e' : '#9ca3af';
+    const typeColor = TYPE_COLORS[tp];
     const sign = diff >= 0 ? '+' : '';
     return `<div class="cat-change">
-      <div class="cat-change-name">${tp}</div>
-      <div class="cat-change-val" style="color:${color}">${arrow} ${sign}${fmtNum(diff)} (${sign}${pctChange}%)</div>
+      <div class="cat-change-name"><span class="cat-dot" style="background:${typeColor}"></span>${tp}</div>
+      <div class="cat-change-val">${sign}${fmtNum(diff)}</div>
+      <div class="cat-change-pct" style="color:${color}">${arrow}${pctChange}%</div>
     </div>`;
   }).join('');
 }
