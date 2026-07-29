@@ -442,7 +442,14 @@
         },
         options: {
           responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => isAmount ? '¥' + fmtNum(ctx.raw) : ctx.raw.toFixed(2) + '%'
+              }
+            }
+          },
           scales: {
             x: { grid: { display: false }, ticks: { maxTicksLimit: 6, color: '#9ca3af', font: { size: 10 } } },
             y: { border: { display: false }, grid: { color: 'rgba(148,111,178,0.08)', drawTicks: false }, ticks: { color: '#9ca3af', font: { size: 10 }, callback: v => isAmount ? ('¥' + (v >= 1000 ? (v/1000).toFixed(1) + 'k' : v)) : v.toFixed(0) + '%' } }

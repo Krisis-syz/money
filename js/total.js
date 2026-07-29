@@ -172,6 +172,14 @@ function renderTrendChart() {
               }));
             }
           }
+        },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              if (isTotal) return '¥' + fmtNum(ctx.raw);
+              return ctx.dataset.label + '：' + ctx.raw.toFixed(2) + '%';
+            }
+          }
         }
       },
       scales: {
