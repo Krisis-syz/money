@@ -371,12 +371,11 @@ function renderAssetBar(container) {
   if (assetSortMode === 'amount') {
     items.sort((a, b) => b.amount - a.amount);
   } else {
-    // 按收支排序：正数在前（大到小），负数在后（小到大）
+    // 按收支排序：正数在前（大到小），负数在后（亏得少的在上）
     items.sort((a, b) => {
       if (a.pnl >= 0 && b.pnl < 0) return -1;
       if (a.pnl < 0 && b.pnl >= 0) return 1;
-      if (a.pnl >= 0) return b.pnl - a.pnl;
-      return a.pnl - b.pnl;
+      return b.pnl - a.pnl;
     });
   }
 
@@ -409,7 +408,7 @@ function renderAssetBar(container) {
         let bgClass, barColor;
         if (assetSortMode === 'amount') {
           bgClass = 'flat';
-          barColor = '#ede5f4';
+          barColor = '#d8c6e8';
         } else {
           if (item.pnl > 0) { bgClass = 'positive'; barColor = 'rgba(239,68,68,0.12)'; }
           else if (item.pnl < 0) { bgClass = 'negative'; barColor = 'rgba(34,197,94,0.12)'; }
@@ -430,7 +429,7 @@ function renderAssetBar(container) {
 function setVizMode(mode) {
   assetVizMode = mode;
   document.querySelectorAll('#vizTabs .module-tab').forEach(btn => {
-    btn.classList.toggle('active', btn.textContent === (mode === 'pie' ? '饼图' : '柱形图'));
+    btn.classList.toggle('active', btn.textContent === (mode === 'pie' ? '占比' : '排行榜'));
   });
   renderAssetViz();
 }
