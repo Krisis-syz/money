@@ -209,7 +209,7 @@ function renderTrendChart() {
 function setTrendMode(mode) {
   trendMode = mode;
   document.querySelectorAll('#trendTabs .module-tab').forEach(btn => {
-    btn.classList.toggle('active', btn.textContent === (mode === 'total' ? '总资金' : '资产分布'));
+    btn.classList.toggle('active', btn.textContent === (mode === 'total' ? '总资金' : '分类占比'));
   });
   renderTrendChart();
 }
