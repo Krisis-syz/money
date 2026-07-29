@@ -161,7 +161,7 @@ function renderTrendChart() {
           display: !isTotal, position: 'bottom',
           labels: {
             usePointStyle: true, pointStyle: 'circle', boxWidth: 0,
-            font: { size: 10 }, padding: 14,
+            font: { size: 12 }, padding: 14,
             generateLabels: (chart) => {
               const data = chart.data;
               return data.datasets.map((ds, i) => ({
