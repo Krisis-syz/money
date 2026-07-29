@@ -560,7 +560,7 @@ function renderAssetBar(container) {
         const pnlColor = item.pnl > 0 ? '#ef4444' : item.pnl < 0 ? '#22c55e' : '#9ca3af';
         return `<div class="bar-row">
           <div class="bar-bg ${bgClass}" style="width:${barWidths[idx]}%"></div>
-          <div class="bar-name"><i class="${item.icon}" style="margin-right:3px;opacity:0.6;"></i>${item.name}</div>
+          <div class="bar-name"><i class="${item.icon}" style="margin-right:15px;opacity:0.6;"></i>${item.name}</div>
           <div class="bar-amount">¥${fmtNum(item.amount)}</div>
           <div class="bar-pnl" style="color:${pnlColor}">${item.pnl >= 0 ? '+' : '-'}${fmtNum(item.pnl)}</div>
         </div>`;
