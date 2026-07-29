@@ -607,7 +607,7 @@
       <div class="module-header">
         <div class="module-tabs" id="trendTabs">
           <button class="module-tab active" onclick="setTrendMode('total')">总资金</button>
-          <button class="module-tab" onclick="setTrendMode('category')">分类占比</button>
+          <button class="module-tab" onclick="setTrendMode('category')">资产分布</button>
         </div>
         <div class="dropdown-wrap">
           <button class="dropdown-btn" id="rangeBtn" onclick="toggleRangeDropdown()">近一年 <i class="fa-solid fa-chevron-down"></i></button>
@@ -624,10 +624,10 @@
       <div id="historyContent"></div>
     </div>
 
-    <!-- 分类占比饼图 -->
+    <!-- 资产分布饼图 -->
     <div class="module">
       <div class="module-header">
-        <div class="module-title">分类占比</div>
+        <div class="module-title">资产分布</div>
         <div class="month-selector">
           <button class="month-btn" onclick="changeCatMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
           <span class="month-text" id="catMonthText" onclick="showMonthInput('cat')" style="cursor:pointer;">--</span>
