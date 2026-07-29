@@ -458,14 +458,16 @@ function renderAssetPie(container) {
   // 布局：左饼图 + 右图例
   container.style.height = 'auto';
   container.innerHTML = `
-    <div style="display:flex;gap:12px;align-items:center;overflow:hidden;">
-      <div style="flex:0 0 150px;height:150px;"><canvas id="assetPieCanvas"></canvas></div>
-      <div style="flex:1;min-width:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;">
+    <div style="display:flex;gap:14px;align-items:center;overflow:hidden;">
+      <div style="flex:0 0 140px;height:140px;"><canvas id="assetPieCanvas"></canvas></div>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;">
         ${items.map(item => {
           const pct = total > 0 ? (item.amount / total * 100).toFixed(1) : '0.0';
-          return `<div style="display:flex;align-items:center;gap:4px;font-size:0.72rem;color:#666;min-width:0;">
+          return `<div style="display:flex;align-items:center;gap:6px;">
             <span style="width:8px;height:8px;border-radius:2px;background:${item.color};flex-shrink:0;"></span>
-            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.name} ${pct}%</span>
+            <span style="flex:1;min-width:0;font-size:0.75rem;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.name}</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:#999;flex-shrink:0;">¥${fmtNum(item.amount)}</span>
+            <span style="font-size:0.68rem;color:#b0a4c4;flex-shrink:0;">${pct}%</span>
           </div>`;
         }).join('')}
       </div>
