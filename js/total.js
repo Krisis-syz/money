@@ -89,6 +89,15 @@ function renderTotalCard() {
 
   document.getElementById('totalAmount').textContent = '¥' + fmtNum(total);
 
+  const pnlEl = document.getElementById('totalPnl');
+  if (prev > 0 || total > 0) {
+    pnlEl.textContent = (diff >= 0 ? '+' : '-') + fmtNum(diff) + '    本月';
+    pnlEl.style.color = diff >= 0 ? '#ef4444' : '#22c55e';
+  } else {
+    pnlEl.textContent = '暂无数据';
+    pnlEl.style.color = '';
+  }
+
   const tagsEl = document.getElementById('totalTags');
   if (allSources.length === 0) { tagsEl.innerHTML = ''; return; }
 
