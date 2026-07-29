@@ -419,15 +419,15 @@ function renderDistAsset(container) {
   const total = items.reduce((s, i) => s + i.amount, 0);
 
   container.innerHTML = `
-    <div style="display:flex;gap:16px;align-items:center;justify-content:center;padding:0 4px;">
-      <div style="flex:0 0 180px;height:180px;"><canvas id="distAssetCanvas"></canvas></div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
+    <div style="display:flex;gap:20px;align-items:center;justify-content:center;padding:4px 8px;">
+      <div style="flex:0 0 200px;height:200px;"><canvas id="distAssetCanvas"></canvas></div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
         ${items.map(item => {
           const pct = total > 0 ? (item.amount / total * 100).toFixed(1) : '0.0';
-          return `<div style="display:flex;align-items:center;gap:6px;">
-            <span style="width:8px;height:8px;border-radius:2px;background:${item.color};flex-shrink:0;"></span>
-            <span style="font-size:0.75rem;color:#666;">${item.name}</span>
-            <span style="font-size:0.7rem;color:#b0a4c4;">${pct}%</span>
+          return `<div style="display:flex;align-items:center;gap:8px;">
+            <span style="width:10px;height:10px;border-radius:2px;background:${item.color};flex-shrink:0;"></span>
+            <span style="font-size:0.78rem;color:#666;">${item.name}</span>
+            <span style="font-size:0.72rem;color:#b0a4c4;">${pct}%</span>
           </div>`;
         }).join('')}
       </div>
@@ -545,17 +545,7 @@ function renderAssetBar(container) {
   }
 
   container.style.height = 'auto';
-  const sortLabel = assetSortMode === 'pnl' ? '按收支' : '按金额';
   container.innerHTML = `
-    <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
-      <div class="dropdown-wrap">
-        <button class="dropdown-btn" onclick="toggleSortDropdown()">${sortLabel} <i class="fa-solid fa-chevron-down"></i></button>
-        <div class="dropdown-menu" id="sortDropdown">
-          <div class="dropdown-item" onclick="setAssetSort('pnl')">按收支</div>
-          <div class="dropdown-item" onclick="setAssetSort('amount')">按金额</div>
-        </div>
-      </div>
-    </div>
     <div class="bar-list">
       ${items.map((item, idx) => {
         let bgClass, barColor;
@@ -581,6 +571,7 @@ function renderAssetBar(container) {
 
 function setAssetSort(mode) {
   assetSortMode = mode;
+  document.getElementById('sortModeBtn').innerHTML = (mode === 'pnl' ? '按收支' : '按金额') + ' <i class="fa-solid fa-chevron-down"></i>';
   document.getElementById('sortDropdown').classList.remove('show');
   renderAssetViz();
 }
@@ -590,7 +581,7 @@ function toggleSortDropdown() {
 }
 
 document.addEventListener('click', e => {
-  if (!e.target.closest('#sortDropdown') && !e.target.closest('.dropdown-btn')) {
+  if (!e.target.closest('#sortDropdown') && !e.target.closest('#sortModeBtn')) {
     const el = document.getElementById('sortDropdown');
     if (el) el.classList.remove('show');
   }
