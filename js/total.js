@@ -385,11 +385,11 @@ function renderAssetBar(container) {
     const maxAmount = items.length > 0 ? items[0].amount : 1;
     barWidths = items.map(i => maxAmount > 0 ? (i.amount / maxAmount * 100) : 0);
   } else {
-    // 按收支：正数组和负数组分别计算
+    // 按收支：正数组和负数组分别计算，正数组最大100%，负数组亏损最多100%
     const positives = items.filter(i => i.pnl >= 0);
     const negatives = items.filter(i => i.pnl < 0);
     const maxPos = positives.length > 0 ? positives[0].pnl : 0;
-    const maxNeg = negatives.length > 0 ? Math.abs(negatives[0].pnl) : 0;
+    const maxNeg = negatives.length > 0 ? Math.abs(negatives[negatives.length - 1].pnl) : 0;
 
     barWidths = items.map(i => {
       if (i.pnl >= 0) return maxPos > 0 ? (i.pnl / maxPos * 100) : 0;
