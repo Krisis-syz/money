@@ -185,7 +185,7 @@ function switchPage(page) {
     assetGrid.style.display = 'none';
     sectionHeader.style.display = 'none';
     recordSection.style.display = '';
-    totalCard.style.display = '';
+    totalCard.style.display = 'none';
     renderRecordPage();
   } else {
     assetGrid.style.display = '';
