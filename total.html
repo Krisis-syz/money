@@ -344,7 +344,7 @@
     }
 
     .bar-amount {
-      width: 100px;
+      width: 110px;
       text-align: right;
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.82rem;
@@ -355,7 +355,7 @@
     }
 
     .bar-pnl {
-      width: 90px;
+      width: 100px;
       text-align: right;
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.82rem;
@@ -444,80 +444,114 @@
 
     .dropdown-item:active { background: #F7F2FB; }
 
-    /* ========== 月份输入弹窗 ========== */
+    /* ========== 月份选择弹窗 ========== */
     .month-input-overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.4);
       display: none;
-      align-items: center;
+      align-items: flex-end;
       justify-content: center;
       z-index: 1000;
-      backdrop-filter: blur(4px);
     }
     .month-input-overlay.show { display: flex; }
 
-    .month-input-box {
+    .picker-box {
       background: #fff;
-      border-radius: 20px;
-      width: 85%;
-      max-width: 300px;
-      padding: 24px 20px;
-      animation: scaleIn 0.25s ease;
-      overflow: hidden;
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-width: 480px;
+      padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+      animation: slideUp 0.3s ease;
     }
 
-    @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-    .month-input-title {
+    .picker-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .picker-title {
       font-size: 1rem;
       font-weight: 600;
-      text-align: center;
-      margin-bottom: 16px;
       color: #2d2d3a;
     }
 
-    .month-input-row {
+    .picker-close {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: none;
+      background: #F0E9F6;
+      color: #6b3fa0;
+      font-size: 0.9rem;
+      cursor: pointer;
       display: flex;
-      gap: 10px;
-      margin-bottom: 16px;
+      align-items: center;
+      justify-content: center;
     }
 
-    .month-input-field {
+    .picker-wheels {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .picker-wheel {
       flex: 1;
-      min-width: 0;
-      padding: 12px 8px;
-      background: #F7F2FB;
-      border: 1px solid rgba(148,111,178,0.2);
-      border-radius: 12px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 1rem;
-      text-align: center;
-      color: #2d2d3a;
-      box-sizing: border-box;
+      height: 180px;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
     }
-    .month-input-field:focus { outline: none; border-color: #946FB2; }
 
-    .month-input-label {
+    .picker-wheel::before, .picker-wheel::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      height: 60px;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .picker-wheel::before { top: 0; background: linear-gradient(to bottom, #fff, transparent); }
+    .picker-wheel::after { bottom: 0; background: linear-gradient(to top, #fff, transparent); }
+
+    .picker-item {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      color: #ccc;
+      scroll-snap-align: center;
+      transition: color 0.2s, transform 0.2s;
+    }
+
+    .picker-item.active {
+      color: #6b3fa0;
+      font-weight: 600;
+      transform: scale(1.1);
+    }
+
+    .picker-label {
       text-align: center;
       font-size: 0.75rem;
       color: #9ca3af;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
-    .month-input-error {
-      color: #ef4444;
-      font-size: 0.78rem;
-      text-align: center;
-      margin-bottom: 12px;
-      min-height: 18px;
-    }
+    .picker-wheel-wrap { flex: 1; }
 
-    .month-input-btns { display: flex; gap: 10px; }
+    .picker-btns { display: flex; gap: 10px; }
 
-    .month-input-btn {
+    .picker-btn {
       flex: 1;
-      padding: 11px;
+      padding: 13px;
       border-radius: 12px;
       font-size: 0.9rem;
       font-weight: 500;
@@ -526,13 +560,8 @@
       font-family: inherit;
     }
 
-    .month-input-cancel { background: #F0E9F6; color: #6b3fa0; }
-    .month-input-confirm { background: #946FB2; color: #fff; font-weight: 600; }
-
-    @media (max-width: 340px) {
-      .month-input-box { padding: 20px 16px; }
-      .month-input-field { font-size: 0.9rem; padding: 10px 6px; }
-    }
+    .picker-btn-cancel { background: #F0E9F6; color: #6b3fa0; }
+    .picker-btn-confirm { background: #946FB2; color: #fff; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -604,24 +633,26 @@
     </div>
   </div>
 
-  <!-- 月份输入弹窗 -->
+  <!-- 月份选择弹窗 -->
   <div class="month-input-overlay" id="monthInputOverlay">
-    <div class="month-input-box">
-      <div class="month-input-title">选择月份</div>
-      <div class="month-input-row">
-        <div>
-          <div class="month-input-label">年份</div>
-          <input type="text" class="month-input-field" id="monthInputYear" placeholder="2026" maxlength="4" inputmode="numeric">
+    <div class="picker-box">
+      <div class="picker-header">
+        <div class="picker-title">选择月份</div>
+        <button class="picker-close" onclick="hideMonthInput()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="picker-wheels">
+        <div class="picker-wheel-wrap">
+          <div class="picker-label">年份</div>
+          <div class="picker-wheel" id="yearWheel"></div>
         </div>
-        <div>
-          <div class="month-input-label">月份</div>
-          <input type="text" class="month-input-field" id="monthInputMonth" placeholder="07" maxlength="2" inputmode="numeric">
+        <div class="picker-wheel-wrap">
+          <div class="picker-label">月份</div>
+          <div class="picker-wheel" id="monthWheel"></div>
         </div>
       </div>
-      <div class="month-input-error" id="monthInputError"></div>
-      <div class="month-input-btns">
-        <button class="month-input-btn month-input-cancel" onclick="hideMonthInput()">取消</button>
-        <button class="month-input-btn month-input-confirm" onclick="confirmMonthInput()">确定</button>
+      <div class="picker-btns">
+        <button class="picker-btn picker-btn-cancel" onclick="hideMonthInput()">取消</button>
+        <button class="picker-btn picker-btn-confirm" onclick="confirmMonthInput()">确定</button>
       </div>
     </div>
   </div>

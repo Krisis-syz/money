@@ -417,7 +417,7 @@ function renderAssetBar(container) {
         }
         const pnlColor = item.pnl > 0 ? '#ef4444' : item.pnl < 0 ? '#22c55e' : '#9ca3af';
         return `<div class="bar-row">
-          <div class="bar-bg ${bgClass}"></div>
+          <div class="bar-bg ${bgClass}" style="width:${barWidths[idx]}%"></div>
           <div class="bar-name">${item.name}</div>
           <div class="bar-amount">¥${fmtNum(item.amount)}</div>
           <div class="bar-pnl" style="color:${pnlColor}">${item.pnl >= 0 ? '+' : '-'}${fmtNum(item.pnl)}</div>
@@ -452,15 +452,51 @@ function changeAssetMonth(delta) {
   renderAssetViz();
 }
 
-// ============ 月份输入弹窗 ============
+// ============ 月份选择弹窗 ============
 function showMonthInput(target) {
   monthInputTarget = target;
   const current = target === 'cat' ? categoryMonth : assetMonth;
-  const [y, m] = current.split('-');
-  document.getElementById('monthInputYear').value = y;
-  document.getElementById('monthInputMonth').value = m;
-  document.getElementById('monthInputError').textContent = '';
+  const [y, m] = current.split('-').map(Number);
+
+  const curYear = new Date().getFullYear();
+  const years = [];
+  for (let yr = curYear; yr >= curYear - 10; yr--) years.push(yr);
+  const months = [1,2,3,4,5,6,7,8,9,10,11,12];
+
+  renderWheel('yearWheel', years, y, 'year');
+  renderWheel('monthWheel', months, m, 'month');
   document.getElementById('monthInputOverlay').classList.add('show');
+}
+
+function renderWheel(containerId, items, selected, type) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = items.map(item => {
+    const val = type === 'month' ? String(item).padStart(2, '0') : item;
+    const isActive = item === selected;
+    return `<div class="picker-item ${isActive ? 'active' : ''}" data-value="${item}">${type === 'month' ? val + '月' : val + '年'}</div>`;
+  }).join('');
+
+  // 滚动到选中项
+  const activeEl = container.querySelector('.active');
+  if (activeEl) {
+    setTimeout(() => {
+      container.scrollTop = activeEl.offsetTop - container.clientHeight / 2 + activeEl.clientHeight / 2;
+    }, 50);
+  }
+
+  // 监听滚动
+  container.addEventListener('scroll', () => {
+    const items = container.querySelectorAll('.picker-item');
+    const center = container.scrollTop + container.clientHeight / 2;
+    let closest = items[0];
+    let minDist = Infinity;
+    items.forEach(item => {
+      const dist = Math.abs(item.offsetTop + item.clientHeight / 2 - center);
+      if (dist < minDist) { minDist = dist; closest = item; }
+    });
+    items.forEach(item => item.classList.remove('active'));
+    closest.classList.add('active');
+  });
 }
 
 function hideMonthInput() {
@@ -469,25 +505,16 @@ function hideMonthInput() {
 }
 
 function confirmMonthInput() {
-  const year = document.getElementById('monthInputYear').value.trim();
-  const month = document.getElementById('monthInputMonth').value.trim();
-  const errorEl = document.getElementById('monthInputError');
+  const yearEl = document.querySelector('#yearWheel .active');
+  const monthEl = document.querySelector('#monthWheel .active');
+  if (!yearEl || !monthEl) return;
 
-  if (!/^\d{4}$/.test(year)) {
-    errorEl.textContent = '请输入4位年份';
-    return;
-  }
-  if (!/^\d{1,2}$/.test(month) || parseInt(month) < 1 || parseInt(month) > 12) {
-    errorEl.textContent = '请输入1-12的月份';
-    return;
-  }
-
-  const y = parseInt(year);
-  const m = parseInt(month);
+  const y = parseInt(yearEl.dataset.value);
+  const m = parseInt(monthEl.dataset.value);
   const newMonth = `${y}-${String(m).padStart(2, '0')}`;
 
   if (newMonth > currentMonth) {
-    errorEl.textContent = '不能选择未来的时间';
+    alert('不能选择未来的时间');
     return;
   }
 
