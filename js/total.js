@@ -168,6 +168,7 @@ function renderTrendChart() {
                 text: '● ' + ds.label,
                 fillStyle: ds.borderColor,
                 strokeStyle: 'transparent',
+                fontColor: ds.borderColor,
                 hidden: false,
                 index: i,
                 pointStyle: false
