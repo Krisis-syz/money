@@ -156,7 +156,7 @@ function renderTrendChart() {
     data: { labels, datasets },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: !isTotal, position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 6, font: { size: 10 }, padding: 12 } } },
+      plugins: { legend: { display: !isTotal, position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 4, font: { size: 10 }, padding: 12 } } },
       scales: {
         x: { grid: { display: false }, ticks: { maxTicksLimit: 6, color: '#9ca3af', font: { size: 10 } } },
         y: {
@@ -364,7 +364,12 @@ function renderCategoryPie() {
       cutout: '60%',
       layout: { padding: { top: 20, bottom: 10, left: 40, right: 40 } },
       plugins: {
-        legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 11 }, padding: 12 } }
+        legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 11 }, padding: 12 } },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => ctx.label + '：¥' + fmtNum(ctx.raw)
+          }
+        }
       }
     }
   });
@@ -375,14 +380,16 @@ function renderCategoryPie() {
 
   const changesEl = document.getElementById('catChanges');
   changesEl.innerHTML = labels.map((tp, i) => {
-    const curPct = total > 0 ? (values[i] / total * 100) : 0;
-    const prevPct = prevTotal > 0 ? (prevTypeTotals[tp] / prevTotal * 100) : 0;
-    const diff = curPct - prevPct;
+    const cur = values[i];
+    const prev = prevTypeTotals[tp] || 0;
+    const diff = cur - prev;
+    const pctChange = prev > 0 ? (diff / prev * 100).toFixed(1) : '0.0';
     const arrow = diff > 0.1 ? '↑' : diff < -0.1 ? '↓' : '→';
     const color = diff > 0.1 ? '#ef4444' : diff < -0.1 ? '#22c55e' : '#9ca3af';
+    const sign = diff >= 0 ? '+' : '';
     return `<div class="cat-change">
       <div class="cat-change-name">${tp}</div>
-      <div class="cat-change-val" style="color:${color}">${arrow} ${Math.abs(diff).toFixed(1)}%</div>
+      <div class="cat-change-val" style="color:${color}">${arrow} ${sign}${fmtNum(diff)} (${sign}${pctChange}%)</div>
     </div>`;
   }).join('');
 }
