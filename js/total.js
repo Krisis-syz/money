@@ -286,7 +286,9 @@ function renderCategoryPie() {
 function changeCatMonth(delta) {
   const [y, m] = categoryMonth.split('-').map(Number);
   const d = new Date(y, m - 1 + delta, 1);
-  categoryMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  const newMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  if (newMonth > currentMonth) return;
+  categoryMonth = newMonth;
   renderCategoryPie();
 }
 
@@ -390,6 +392,8 @@ function setAssetSort(mode) {
 function changeAssetMonth(delta) {
   const [y, m] = assetMonth.split('-').map(Number);
   const d = new Date(y, m - 1 + delta, 1);
-  assetMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  const newMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  if (newMonth > currentMonth) return;
+  assetMonth = newMonth;
   renderAssetViz();
 }
