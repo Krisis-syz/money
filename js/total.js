@@ -156,7 +156,7 @@ function renderTrendChart() {
     data: { labels, datasets },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: !isTotal, position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 10, font: { size: 10 }, padding: 8 } } },
+      plugins: { legend: { display: !isTotal, position: 'bottom', labels: { boxWidth: 10, font: { size: 10 }, padding: 8 } } },
       scales: {
         x: { grid: { display: false }, ticks: { maxTicksLimit: 6, color: '#9ca3af', font: { size: 10 } } },
         y: {
