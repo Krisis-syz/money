@@ -161,17 +161,18 @@ function renderTrendChart() {
           display: !isTotal, position: 'bottom',
           labels: {
             usePointStyle: true, pointStyle: 'circle', boxWidth: 0,
-            font: { size: 12 }, padding: 14,
+            font: { size: 16 }, padding: 14, color: '#9ca3af',
             generateLabels: (chart) => {
               const data = chart.data;
               return data.datasets.map((ds, i) => ({
-                text: '● ' + ds.label,
+                text: ds.label,
                 fillStyle: ds.borderColor,
                 strokeStyle: 'transparent',
-                fontColor: ds.borderColor,
+                fontColor: '#9ca3af',
                 hidden: false,
                 index: i,
-                pointStyle: false
+                pointStyle: 'circle',
+                pointStyleWidth: 14
               }));
             }
           }
