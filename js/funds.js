@@ -7,7 +7,7 @@ let longPressTimer = null;
 let longPressSourceId = null;
 let currentPage = 'assets';
 
-const COLORS = ['#9B8B9C', '#E0A878', '#7398C2', '#D9889F', '#8682BC', '#5AB4AC', '#D16C60', '#79B87B'];
+const COLORS = ['#946FB2', '#6366f1', '#ec4899', '#14b8a6', '#f59e0b', '#3b82f6', '#ef4444', '#22c55e'];
 const ICONS = ['fa-solid fa-wallet', 'fa-solid fa-landmark', 'fa-solid fa-credit-card', 'fa-solid fa-piggy-bank', 'fa-solid fa-chart-line', 'fa-solid fa-coins', 'fa-solid fa-building-columns', 'fa-solid fa-money-bill-wave'];
 
 // ============ 初始化 ============

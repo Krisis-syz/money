@@ -417,7 +417,7 @@ function renderDistType(container) {
 }
 
 function renderDistAsset(container) {
-  const COLORS = ['#9B8B9C', '#E0A878', '#7398C2', '#D9889F', '#8682BC', '#5AB4AC', '#D16C60', '#79B87B'];
+  const COLORS = ['#946FB2', '#6366f1', '#ec4899', '#14b8a6', '#f59e0b', '#3b82f6', '#ef4444', '#22c55e'];
 
   const items = allSources.map((s, i) => ({
     name: s.name,
