@@ -130,7 +130,158 @@
       color: #b0a4c4;
       font-size: 0.75rem;
       margin-top: 30px;
+      cursor: pointer;
     }
+    .version:active { color: #946FB2; }
+
+    /* ========== 版本历史弹窗 ========== */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    .modal-overlay.show { display: flex; }
+
+    .modal-box {
+      background: #fff;
+      border-radius: 20px;
+      width: 85%;
+      max-width: 340px;
+      padding: 24px 20px;
+      animation: scaleIn 0.25s ease;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+    .modal-title {
+      font-size: 1rem;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 20px;
+      color: #2d2d3a;
+    }
+
+    .version-list { list-style: none; }
+
+    .version-item {
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(148,111,178,0.08);
+    }
+    .version-item:last-child { border-bottom: none; }
+
+    .version-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .version-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #6b3fa0;
+    }
+
+    .version-date {
+      font-size: 0.7rem;
+      color: #b0a4c4;
+    }
+
+    .version-changes {
+      font-size: 0.78rem;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .version-changes li {
+      list-style: none;
+      padding-left: 12px;
+      position: relative;
+    }
+    .version-changes li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #b0a4c4;
+    }
+
+    .modal-close {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin-top: 16px;
+      border: none;
+      border-radius: 12px;
+      background: #F0E9F6;
+      color: #6b3fa0;
+      font-size: 0.9rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    .modal-close:active { background: #ede5f4; }
+
+    .note-textarea {
+      width: 100%;
+      padding: 12px 14px;
+      background: #F7F2FB;
+      border: 1px solid rgba(148,111,178,0.2);
+      border-radius: 12px;
+      color: #2d2d3a;
+      font-size: 0.9rem;
+      font-family: inherit;
+      margin-bottom: 16px;
+      resize: vertical;
+      min-height: 80px;
+      transition: border-color 0.2s;
+    }
+    .note-textarea:focus { outline: none; border-color: #946FB2; }
+    .note-textarea::placeholder { color: #b0a4c4; }
+
+    .modal-btns { display: flex; gap: 10px; }
+
+    .modal-btn {
+      flex: 1;
+      padding: 11px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+    }
+
+    .modal-btn-cancel { background: #F0E9F6; color: #6b3fa0; }
+    .modal-btn-confirm { background: #946FB2; color: #fff; font-weight: 600; }
+
+    .save-toast {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(34, 197, 94, 0.95);
+      color: #fff;
+      padding: 12px 28px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      z-index: 2000;
+      animation: toastIn 0.3s ease;
+    }
+
+    @keyframes toastIn { from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
 
     .bottom-nav {
       position: fixed;
@@ -159,23 +310,49 @@
       font-size: 0.65rem;
       font-weight: 500;
       padding: 4px 12px;
+      transition: color 0.2s;
       cursor: pointer;
     }
 
     .nav-item i { font-size: 1.15rem; }
     .nav-item.active { color: #946FB2; }
+    .nav-item.active i { color: #946FB2; }
+
+    .nav-add-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #946FB2;
+      border: none;
+      color: #fff;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 12px rgba(148,111,178,0.4);
+      margin-top: -20px;
+      transition: transform 0.2s;
+    }
+
+    .nav-add-btn:active { transform: scale(0.9); }
   </style>
 </head>
 <body>
   <div class="page">
-    <div class="page-title">我的</div>
-
     <div class="profile-card">
       <div class="profile-avatar" id="avatar">-</div>
       <div class="profile-email" id="email">加载中...</div>
     </div>
 
     <div class="menu-card">
+      <div class="menu-item" onclick="showNoteModal()">
+        <div class="menu-icon" style="background:rgba(148,111,178,0.1);color:#946FB2;">
+          <i class="fa-solid fa-pen-to-square"></i>
+        </div>
+        <div class="menu-text">添加备注</div>
+        <div class="menu-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+      </div>
       <div class="menu-item" onclick="handleLogout()">
         <div class="menu-icon" style="background:rgba(239,68,68,0.1);color:#ef4444;">
           <i class="fa-solid fa-right-from-bracket"></i>
@@ -185,18 +362,69 @@
       </div>
     </div>
 
-    <div class="version">资产管理 v1.0.0</div>
+    <div class="version" onclick="showVersionModal()">Budget&nbsp;&nbsp;v1.1.0</div>
+  </div>
+
+  <!-- 备注弹窗 -->
+  <div class="modal-overlay" id="noteModal">
+    <div class="modal-box">
+      <div class="modal-title">添加备注</div>
+      <textarea class="note-textarea" id="noteInput" rows="4" placeholder="输入保存记录时的确认提示文本..."></textarea>
+      <div class="modal-btns">
+        <button class="modal-btn modal-btn-cancel" onclick="hideNoteModal()">取消</button>
+        <button class="modal-btn modal-btn-confirm" onclick="saveNote()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 版本历史弹窗 -->
+  <div class="modal-overlay" id="versionModal">
+    <div class="modal-box">
+      <div class="modal-title">版本历史</div>
+      <ul class="version-list">
+        <li class="version-item">
+          <div class="version-head">
+            <span class="version-tag">v1.1.0</span>
+            <span class="version-date">2026-07-29</span>
+          </div>
+          <ul class="version-changes">
+            <li>AI 智能资产报告生成</li>
+            <li>动态问题分析与用户补充说明</li>
+            <li>图表可视化（趋势图/饼图/柱状图）</li>
+            <li>历史报告查看与重新编辑</li>
+            <li>保存记录确认弹窗与备注功能</li>
+          </ul>
+        </li>
+        <li class="version-item">
+          <div class="version-head">
+            <span class="version-tag">v1.0.0</span>
+            <span class="version-date">2026-07-29</span>
+          </div>
+          <ul class="version-changes">
+            <li>多资产类别管理（流动/基金/股票）</li>
+            <li>月度记录与总资产趋势分析</li>
+            <li>资产分布饼图与柱形图可视化</li>
+            <li>自定义数字键盘输入</li>
+            <li>Supabase 后端数据存储</li>
+          </ul>
+        </li>
+      </ul>
+      <button class="modal-close" onclick="hideVersionModal()">关闭</button>
+    </div>
   </div>
 
   <nav class="bottom-nav">
-    <a href="index.html" class="nav-item"><i class="fa-solid fa-wallet"></i>资产</a>
-    <a href="index.html" class="nav-item" onclick="sessionStorage.setItem('switchTo','history')"><i class="fa-solid fa-clock-rotate-left"></i>记录</a>
-    <a href="index.html" class="nav-item" onclick="sessionStorage.setItem('switchTo','ai')"><i class="fa-solid fa-robot"></i>AI报告</a>
+    <a class="nav-item" onclick="location.href='index.html'"><i class="fa-solid fa-wallet"></i>资产</a>
+    <a class="nav-item" onclick="sessionStorage.setItem('switchTo','history');location.href='index.html'" style="position:relative;"><i class="fa-solid fa-clock-rotate-left"></i>记录</a>
+    <button class="nav-add-btn" onclick="location.href='index.html#openAdd'"><i class="fa-solid fa-plus"></i></button>
+    <a class="nav-item" href="ai.html"><i class="fa-solid fa-robot"></i>AI报告</a>
     <a href="profile.html" class="nav-item active"><i class="fa-solid fa-user"></i>我的</a>
   </nav>
 
   <script src="js/api.js"></script>
   <script>
+    let userNote = '';
+
     document.addEventListener('DOMContentLoaded', async () => {
       await waitForSupabase();
       if (!(await requireAuth())) return;
@@ -205,6 +433,7 @@
         document.getElementById('email').textContent = user.email;
         document.getElementById('avatar').textContent = user.email.charAt(0).toUpperCase();
       }
+      try { userNote = await fundApi.getNote(); } catch (e) {}
     });
 
     function handleLogout() {
@@ -212,6 +441,53 @@
         signOut();
       }
     }
+
+    function showNoteModal() {
+      document.getElementById('noteInput').value = userNote;
+      document.getElementById('noteModal').classList.add('show');
+      setTimeout(() => document.getElementById('noteInput').focus(), 100);
+    }
+
+    function hideNoteModal() {
+      document.getElementById('noteModal').classList.remove('show');
+    }
+
+    async function saveNote() {
+      const content = document.getElementById('noteInput').value.trim();
+      try {
+        await fundApi.saveNote(content);
+        userNote = content;
+        hideNoteModal();
+        const toast = document.createElement('div');
+        toast.className = 'save-toast';
+        toast.textContent = '备注已保存';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 1500);
+      } catch (e) {
+        const toast = document.createElement('div');
+        toast.className = 'save-toast';
+        toast.style.background = 'rgba(239,68,68,0.95)';
+        toast.textContent = '保存失败';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 1500);
+      }
+    }
+
+    document.getElementById('noteModal').addEventListener('click', e => {
+      if (e.target === e.currentTarget) hideNoteModal();
+    });
+
+    function showVersionModal() {
+      document.getElementById('versionModal').classList.add('show');
+    }
+
+    function hideVersionModal() {
+      document.getElementById('versionModal').classList.remove('show');
+    }
+
+    document.getElementById('versionModal').addEventListener('click', e => {
+      if (e.target === e.currentTarget) hideVersionModal();
+    });
   </script>
 </body>
 </html>

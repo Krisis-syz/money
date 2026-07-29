@@ -718,7 +718,7 @@
     <a class="nav-item active" onclick="switchPage('assets')"><i class="fa-solid fa-wallet"></i>资产</a>
     <a class="nav-item" onclick="switchPage('history')" style="position:relative;"><i class="fa-solid fa-clock-rotate-left"></i>记录<span class="nav-badge" id="recordBadge" style="display:none;"></span></a>
     <button class="nav-add-btn" onclick="showAddModal()"><i class="fa-solid fa-plus"></i></button>
-    <a class="nav-item" onclick="switchPage('ai')"><i class="fa-solid fa-robot"></i>AI报告</a>
+    <a class="nav-item" href="ai.html"><i class="fa-solid fa-robot"></i>AI报告</a>
     <a class="nav-item" href="profile.html"><i class="fa-solid fa-user"></i>我的</a>
   </nav>
 
@@ -774,6 +774,18 @@
       <div class="modal-btns">
         <button class="modal-btn modal-btn-cancel" onclick="hideDeleteModal()">取消</button>
         <button class="modal-btn modal-btn-confirm" style="background:#ef4444;" onclick="confirmDeleteSource()">删除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 确认保存弹窗 -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal-box">
+      <div class="modal-title">确认保存</div>
+      <p id="confirmText" style="text-align:center;color:#666;font-size:0.9rem;margin-bottom:20px;white-space:pre-wrap;"></p>
+      <div class="modal-btns">
+        <button class="modal-btn modal-btn-cancel" onclick="hideConfirmModal()">取消</button>
+        <button class="modal-btn modal-btn-confirm" onclick="doSaveRecords()">确认</button>
       </div>
     </div>
   </div>

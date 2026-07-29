@@ -113,7 +113,18 @@ const fundApi = {
   saveRecords: async (yearMonth, records) => {
     const sb = getSupabase();
     const user = await getCurrentUser();
-    const rows = records.map(r => ({ user_id: user.id, source_id: r.sourceId, year_month: yearMonth, amount: r.amount }));
+    // 获取资产名称
+    const { data: sources } = await sb.from('fund_sources').select('id, name').eq('user_id', user.id);
+    const sourceMap = {};
+    (sources || []).forEach(s => { sourceMap[s.id] = s.name; });
+    const rows = records.map(r => ({
+      user_id: user.id,
+      source_id: r.sourceId,
+      source_name: sourceMap[r.sourceId] || '',
+      year_month: yearMonth,
+      amount: r.amount,
+      updated_at: new Date().toISOString()
+    }));
     const { error } = await sb.from('fund_records').upsert(rows, { onConflict: 'user_id,source_id,year_month' });
     if (error) throw error;
   },
@@ -150,11 +161,39 @@ const fundApi = {
     return data || [];
   },
 
-  generateReport: async (yearMonth) => {
+  generateReport: async (prompt) => {
     const sb = getSupabase();
-    const user = await getCurrentUser();
-    const { data, error } = await sb.functions.invoke('generate-fund-report', { body: { user_id: user.id, year_month: yearMonth } });
+    const { data, error } = await sb.functions.invoke('generate-report', { body: { prompt } });
     if (error) throw error;
     return data;
+  },
+
+  saveReport: async (yearMonth, questions, userInput, reportText, status) => {
+    const sb = getSupabase();
+    const user = await getCurrentUser();
+    const { error } = await sb.from('fund_reports').upsert({
+      user_id: user.id,
+      year_month: yearMonth,
+      questions,
+      user_input: userInput,
+      report_text: reportText,
+      status: status || 'completed'
+    }, { onConflict: 'user_id,year_month' });
+    if (error) throw error;
+  },
+
+  getNote: async () => {
+    const sb = getSupabase();
+    const user = await getCurrentUser();
+    const { data, error } = await sb.from('user_notes').select('content').eq('user_id', user.id).single();
+    if (error && error.code !== 'PGRST116') throw error;
+    return data ? data.content : '';
+  },
+
+  saveNote: async (content) => {
+    const sb = getSupabase();
+    const user = await getCurrentUser();
+    const { error } = await sb.from('user_notes').upsert({ user_id: user.id, content, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+    if (error) throw error;
   }
 };

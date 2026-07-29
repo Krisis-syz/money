@@ -6,22 +6,55 @@ let sortAsc = true;
 let longPressTimer = null;
 let longPressSourceId = null;
 let currentPage = 'assets';
+let userNote = '';
 
 const COLORS = ['#946FB2', '#6366f1', '#ec4899', '#14b8a6', '#f59e0b', '#3b82f6', '#ef4444', '#22c55e'];
 const ICONS = ['fa-solid fa-wallet', 'fa-solid fa-landmark', 'fa-solid fa-credit-card', 'fa-solid fa-piggy-bank', 'fa-solid fa-chart-line', 'fa-solid fa-coins', 'fa-solid fa-building-columns', 'fa-solid fa-money-bill-wave'];
 
 // ============ 初始化 ============
 document.addEventListener('DOMContentLoaded', async () => {
+  // 立即处理跳转，防止闪烁
+  const switchTo = sessionStorage.getItem('switchTo');
+  if (switchTo) {
+    sessionStorage.removeItem('switchTo');
+    if (switchTo === 'history') {
+      document.getElementById('assetGrid').style.display = 'none';
+      document.querySelector('.section-header').style.display = 'none';
+      document.getElementById('recordSection').style.display = '';
+      document.getElementById('totalCard').style.display = 'none';
+      currentPage = 'history';
+    }
+  }
+
   await waitForSupabase();
   if (!(await requireAuth())) return;
   await loadAllData();
-  renderAssets();
+
+  if (switchTo === 'history') {
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(n => n.classList.remove('active'));
+    navItems[1].classList.add('active');
+    renderRecordPage();
+  } else if (switchTo === 'ai') {
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(n => n.classList.remove('active'));
+    navItems[2].classList.add('active');
+    currentPage = 'ai';
+  } else {
+    renderAssets();
+  }
+
+  if (location.hash === '#openAdd') {
+    history.replaceState(null, '', location.pathname);
+    showAddModal();
+  }
 });
 
 async function loadAllData() {
   try {
     allSources = await fundApi.getSources();
     allRecords = await fundApi.getAllRecords();
+    userNote = await fundApi.getNote();
     updateRecordBadge();
   } catch (e) {
     console.error('加载数据失败:', e);
@@ -165,9 +198,10 @@ async function confirmAddSource() {
 }
 
 // ============ 底部导航 ============
-function switchPage(page) {
+function switchPage(page, el) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  event.currentTarget.classList.add('active');
+  if (el) el.classList.add('active');
+  else if (event && event.currentTarget) event.currentTarget.classList.add('active');
   currentPage = page;
 
   const assetGrid = document.getElementById('assetGrid');
@@ -354,6 +388,25 @@ async function saveMonthRecords() {
     return;
   }
 
+  pendingRecords = records;
+  document.getElementById('confirmText').textContent = userNote || '确认保存本月记录？';
+  document.getElementById('confirmModal').classList.add('show');
+}
+
+let pendingRecords = [];
+
+function hideConfirmModal() {
+  document.getElementById('confirmModal').classList.remove('show');
+  pendingRecords = [];
+}
+
+document.getElementById('confirmModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) hideConfirmModal();
+});
+
+async function doSaveRecords() {
+  const records = [...pendingRecords];
+  hideConfirmModal();
   try {
     await fundApi.saveRecords(currentMonth, records);
     allRecords = await fundApi.getAllRecords();
@@ -365,6 +418,7 @@ async function saveMonthRecords() {
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 1500);
   } catch (e) { alert('保存失败: ' + e.message); }
+  pendingRecords = [];
 }
 
 // ============ 数字键盘 ============
