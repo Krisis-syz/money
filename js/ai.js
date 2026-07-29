@@ -16,6 +16,13 @@ function getPrevMonth(ym) {
   return m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, '0')}`;
 }
 
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `${r},${g},${b}`;
+}
+
 function fmtNum(n) {
   return Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
@@ -111,7 +118,7 @@ function renderCharts(charts) {
       // 添加标题
       if (title) {
         const titleEl = document.createElement('div');
-        titleEl.style.cssText = 'text-align:center;font-size:0.78rem;color:#6b3fa0;font-weight:500;margin-bottom:8px;';
+        titleEl.style.cssText = `text-align:center;font-size:0.78rem;color:${getThemeColors().accent};font-weight:500;margin-bottom:8px;`;
         titleEl.textContent = title;
         container.appendChild(titleEl);
       }
@@ -174,12 +181,12 @@ function renderTrendChart(canvas, assetId) {
       datasets: [{
         label: assetId ? '资产趋势' : '总资产趋势',
         data,
-        borderColor: '#946FB2',
-        backgroundColor: 'rgba(148,111,178,0.1)',
+        borderColor: getThemeColors().primary,
+        backgroundColor: `rgba(${hexToRgb(getThemeColors().primary)},0.1)`,
         fill: true,
         tension: 0.4,
         pointRadius: 4,
-        pointBackgroundColor: '#946FB2'
+        pointBackgroundColor: getThemeColors().primary
       }]
     },
     options: {
@@ -213,7 +220,8 @@ function renderTrendChart(canvas, assetId) {
 // 渲染饼图（资产分布）
 function renderPieChart(canvas) {
   const typeMap = { '流动': 0, '基金': 0, '股票': 0 };
-  const typeColors = { '流动': '#a78bfa', '基金': '#60a5fa', '股票': '#f472b6' };
+  const themeColors = getThemeColors();
+  const typeColors = { '流动': themeColors.流动, '基金': themeColors.基金, '股票': themeColors.股票 };
 
   allSources.forEach(s => {
     const amt = getAmountForMonth(s.id, reportMonth);
@@ -292,7 +300,7 @@ function renderPieChart(canvas) {
 
 // 渲染柱状图（各资产对比，按金额由高到低排序）
 function renderBarChart(canvas) {
-  const COLORS = ['#946FB2', '#6366f1', '#ec4899', '#14b8a6', '#f59e0b', '#3b82f6', '#ef4444', '#22c55e'];
+  const COLORS = getThemeColors().chart;
 
   const items = allSources
     .map((s, i) => ({
@@ -385,7 +393,7 @@ function calcQuestions() {
         id: 'total',
         icon: 'fa-solid fa-chart-line',
         iconBg: 'rgba(148,111,178,0.12)',
-        iconColor: '#946FB2',
+        iconColor: getThemeColors().primary,
         label: `总资产较上月${dir} ${Math.abs(totalChange).toFixed(1)}%`,
         placeholder: `请填写总资产${dir}的原因...`
       });
@@ -394,10 +402,11 @@ function calcQuestions() {
 
   // 2. 三大类变化 > 20%
   const types = ['流动', '基金', '股票'];
+  const themeColors = getThemeColors();
   const typeIcons = {
-    '流动': { icon: 'fa-solid fa-money-bill-wave', bg: 'rgba(167,139,250,0.12)', color: '#a78bfa' },
-    '基金': { icon: 'fa-solid fa-chart-pie', bg: 'rgba(96,165,250,0.12)', color: '#60a5fa' },
-    '股票': { icon: 'fa-solid fa-arrow-trend-up', bg: 'rgba(244,114,182,0.12)', color: '#f472b6' }
+    '流动': { icon: 'fa-solid fa-money-bill-wave', bg: 'rgba(167,139,250,0.12)', color: themeColors.流动 },
+    '基金': { icon: 'fa-solid fa-chart-pie', bg: 'rgba(96,165,250,0.12)', color: themeColors.基金 },
+    '股票': { icon: 'fa-solid fa-arrow-trend-up', bg: 'rgba(244,114,182,0.12)', color: themeColors.股票 }
   };
 
   types.forEach(type => {
@@ -432,7 +441,7 @@ function calcQuestions() {
           id: `src_${s.id}`,
           icon: s.icon || 'fa-solid fa-wallet',
           iconBg: 'rgba(148,111,178,0.12)',
-          iconColor: '#946FB2',
+          iconColor: getThemeColors().primary,
           label: `${s.name}资产较上月${dir} ${Math.abs(change).toFixed(1)}%`,
           placeholder: `请填写${s.name}资产${dir}的原因...`
         });
@@ -764,7 +773,7 @@ async function regenerateFromEdit() {
   main.innerHTML = `
     <div class="form-card" style="text-align:center;padding:40px 20px;">
       <div class="spinner" style="margin:0 auto 16px;"></div>
-      <div style="color:#946FB2;font-size:0.9rem;font-weight:500;">AI 重新生成中，请稍候...</div>
+      <div style="color:${getThemeColors().primary};font-size:0.9rem;font-weight:500;">AI 重新生成中，请稍候...</div>
     </div>
   `;
 

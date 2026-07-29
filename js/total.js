@@ -14,7 +14,10 @@ let assetMonth = currentMonth;
 let assetPieChart = null;
 let monthInputTarget = null;
 
-const TYPE_COLORS = { '流动': '#a78bfa', '基金': '#60a5fa', '股票': '#f472b6' };
+const TYPE_COLORS = (() => {
+  const c = getThemeColors();
+  return { '流动': c.流动, '基金': c.基金, '股票': c.股票 };
+})();
 
 // ============ 初始化 ============
 document.addEventListener('DOMContentLoaded', async () => {
@@ -44,6 +47,13 @@ function getPrevMonth(ym) {
 
 function fmtNum(n) {
   return Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `${r},${g},${b}`;
 }
 
 function getMonthTotal(ym) {
@@ -126,19 +136,20 @@ function renderTrendChart() {
 
     const canvas = ctx.getContext('2d');
     const gradient = canvas.createLinearGradient(0, 0, 0, 180);
-    gradient.addColorStop(0, 'rgba(148,111,178,0.5)');
-    gradient.addColorStop(1, 'rgba(148,111,178,0.0)');
+    const primaryRgb = hexToRgb(getThemeColors().primary);
+    gradient.addColorStop(0, `rgba(${primaryRgb},0.5)`);
+    gradient.addColorStop(1, `rgba(${primaryRgb},0.0)`);
 
     datasets = [{
       data: filtered.map(d => d.value),
-      borderColor: '#946FB2',
+      borderColor: getThemeColors().primary,
       backgroundColor: gradient,
-      pointBackgroundColor: '#946FB2',
+      pointBackgroundColor: getThemeColors().primary,
       fill: true, tension: 0.4, pointRadius: 2.5, borderWidth: 2.5
     }];
   } else {
     const types = ['流动', '基金', '股票'];
-    const colors = ['#a78bfa', '#60a5fa', '#f472b6'];
+    const colors = [getThemeColors().流动, getThemeColors().基金, getThemeColors().股票];
     const data = allMonths.map(m => {
       const t = getTypeTotals(m);
       const total = getMonthTotal(m);
@@ -320,7 +331,7 @@ function renderDistType(container) {
 
         const sx = centerX + Math.cos(angle) * outerR;
         const sy = centerY + Math.sin(angle) * outerR;
-        const lineLen = 22;
+        const lineLen = 14;
         const ex = centerX + Math.cos(angle) * (outerR + lineLen);
         const ey = centerY + Math.sin(angle) * (outerR + lineLen);
 
@@ -334,7 +345,7 @@ function renderDistType(container) {
         ctx.stroke();
 
         const isRight = Math.cos(angle) >= 0;
-        const gap = 6;
+        const gap = 4;
 
         const horizEndX = isRight ? ex + gap : ex - gap;
         ctx.beginPath();
@@ -378,7 +389,7 @@ function renderDistType(container) {
   };
 
   if (catPieChart) catPieChart.destroy();
-  container.innerHTML = '<div class="chart-wrap" style="height:240px;"><canvas id="catPieChart"></canvas></div><div class="cat-changes" id="catChanges"></div>';
+  container.innerHTML = '<div class="chart-wrap" style="height:280px;"><canvas id="catPieChart"></canvas></div><div style="height:0;"></div><div class="cat-changes" id="catChanges"></div>';
   const ctx = document.getElementById('catPieChart');
 
   catPieChart = new Chart(ctx, {
@@ -388,7 +399,7 @@ function renderDistType(container) {
     options: {
       responsive: true, maintainAspectRatio: false,
       cutout: '60%',
-      layout: { padding: { top: 20, bottom: 10, left: 40, right: 40 } },
+      layout: { padding: { top: 40, bottom: 40, left: 60, right: 60 } },
       plugins: {
         legend: { display: false },
         tooltip: { callbacks: { title: () => '', label: (ctx) => ctx.label + '：¥' + fmtNum(ctx.raw) } }
@@ -417,7 +428,7 @@ function renderDistType(container) {
 }
 
 function renderDistAsset(container) {
-  const COLORS = ['#946FB2', '#6366f1', '#ec4899', '#14b8a6', '#f59e0b', '#3b82f6', '#ef4444', '#22c55e'];
+  const COLORS = getThemeColors().chart;
 
   const items = allSources.map((s, i) => ({
     name: s.name,
@@ -429,7 +440,7 @@ function renderDistAsset(container) {
 
   container.innerHTML = `
     <div style="display:flex;gap:20px;align-items:center;justify-content:flex-start;padding:4px 0 4px 0;">
-      <div style="flex:0 0 200px;height:200px;margin-left:-12px;"><canvas id="distAssetCanvas"></canvas></div>
+      <div style="flex:0 0 200px;height:200px;margin-left:-24px;"><canvas id="distAssetCanvas"></canvas></div>
       <div style="display:flex;flex-direction:column;gap:14px;">
         ${items.map(item => {
           const pct = total > 0 ? (item.amount / total * 100).toFixed(1) : '0.0';
@@ -681,7 +692,7 @@ function confirmMonthInput() {
 
   if (monthInputTarget === 'cat') {
     categoryMonth = newMonth;
-    renderCategoryPie();
+    renderDistContent();
   } else {
     assetMonth = newMonth;
     renderAssetViz();

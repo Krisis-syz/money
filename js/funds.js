@@ -8,7 +8,7 @@ let longPressSourceId = null;
 let currentPage = 'assets';
 let userNote = '';
 
-const COLORS = ['#946FB2', '#6366f1', '#ec4899', '#14b8a6', '#f59e0b', '#3b82f6', '#ef4444', '#22c55e'];
+const COLORS = getThemeColors().chart;
 const ICONS = ['fa-solid fa-wallet', 'fa-solid fa-landmark', 'fa-solid fa-credit-card', 'fa-solid fa-piggy-bank', 'fa-solid fa-chart-line', 'fa-solid fa-coins', 'fa-solid fa-building-columns', 'fa-solid fa-money-bill-wave'];
 
 // ============ 初始化 ============
@@ -109,7 +109,8 @@ function renderTotalCard() {
   }
 
   const typeMap = { '流动': 0, '基金': 0, '股票': 0 };
-  const typeColors = { '流动': '#a78bfa', '基金': '#60a5fa', '股票': '#f472b6' };
+  const themeColors = getThemeColors();
+  const typeColors = { '流动': themeColors.流动, '基金': themeColors.基金, '股票': themeColors.股票 };
   allSources.forEach(s => {
     const amt = getAmountForMonth(s.id, currentMonth);
     const t = s.type || '流动';

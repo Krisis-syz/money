@@ -9,13 +9,15 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" href="icon.png" type="image/png">
   <meta name="theme-color" content="#F0E9F6">
+  <link rel="stylesheet" href="js/theme.css">
+  <script src="js/theme.js"></script>
   <script src="js/supabase.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #F0E9F6;
+      background: var(--bg);
       min-height: 100vh;
       min-height: 100dvh;
       color: #2d2d3a;
@@ -39,7 +41,7 @@
       font-size: 1.5rem;
       font-weight: 700;
       text-align: center;
-      color: #6b3fa0;
+      color: var(--accent);
       margin-bottom: 6px;
     }
 
@@ -58,14 +60,14 @@
       display: block;
       font-size: 0.8rem;
       font-weight: 500;
-      color: #6b3fa0;
+      color: var(--accent);
       margin-bottom: 6px;
     }
 
     .form-group input {
       width: 100%;
       padding: 12px 14px;
-      background: #F7F2FB;
+      background: var(--card);
       border: 1px solid rgba(148,111,178,0.2);
       border-radius: 12px;
       color: #2d2d3a;
@@ -76,7 +78,7 @@
 
     .form-group input:focus {
       outline: none;
-      border-color: #946FB2;
+      border-color: var(--primary);
     }
 
     .form-group input::placeholder { color: #b0a4c4; }
@@ -116,7 +118,7 @@
     .btn:active { opacity: 0.85; }
 
     .btn-primary {
-      background: #946FB2;
+      background: var(--primary);
       color: #fff;
     }
 
@@ -147,7 +149,7 @@
     .btn-link {
       background: none;
       border: none;
-      color: #946FB2;
+      color: var(--primary);
       font-weight: 600;
       font-family: inherit;
       font-size: 0.85rem;

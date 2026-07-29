@@ -13,6 +13,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#F0E9F6">
+  <link rel="stylesheet" href="js/theme.css">
+  <script src="js/theme.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="js/supabase.min.js"></script>
   <style>
@@ -20,7 +22,7 @@
 
     body {
       font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #F0E9F6;
+      background: var(--bg);
       min-height: 100vh;
       min-height: 100dvh;
       color: #2d2d3a;
@@ -36,14 +38,14 @@
       position: relative;
     }
 
-    /* ========== 紫色弧线背景 ========== */
+    /* ========== 弧线背景 ========== */
     .hero-bg {
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
       height: 160px;
-      background: #946FB2;
+      background: var(--primary);
       border-radius: 0 0 50% 50% / 0 0 40px 40px;
       z-index: 0;
     }
@@ -131,7 +133,7 @@
     .section-title {
       font-size: 1.05rem;
       font-weight: 700;
-      color: #6b3fa0;
+      color: var(--accent);
     }
 
     .sort-btn {
@@ -140,7 +142,7 @@
       border-radius: 10px;
       border: none;
       background: rgba(107, 63, 160, 0.08);
-      color: #946FB2;
+      color: var(--primary);
       font-size: 0.9rem;
       cursor: pointer;
       display: flex;
@@ -160,7 +162,7 @@
     }
 
     .asset-card {
-      background: #F7F2FB;
+      background: var(--card);
       border-radius: 16px;
       padding: 16px 14px;
       display: flex;
@@ -184,7 +186,7 @@
     .asset-name {
       font-size: 0.82rem;
       font-weight: 600;
-      color: #6b3fa0;
+      color: var(--accent);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -206,7 +208,7 @@
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.95rem;
       font-weight: 700;
-      color: #6b3fa0;
+      color: var(--accent);
     }
 
     .asset-icon {
@@ -218,7 +220,7 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      color: #946FB2;
+      color: var(--primary);
       font-size: 1rem;
     }
 
@@ -255,8 +257,8 @@
     }
 
     .nav-item i { font-size: 1.15rem; }
-    .nav-item.active { color: #946FB2; }
-    .nav-item.active i { color: #946FB2; }
+    .nav-item.active { color: var(--primary); }
+    .nav-item.active i { color: var(--primary); }
 
     .nav-badge {
       position: absolute;
@@ -322,7 +324,7 @@
     .modal-input {
       width: 100%;
       padding: 12px 14px;
-      background: #F7F2FB;
+      background: var(--card);
       border: 1px solid rgba(148,111,178,0.2);
       border-radius: 12px;
       color: #2d2d3a;
@@ -332,7 +334,7 @@
       transition: border-color 0.2s;
     }
 
-    .modal-input:focus { outline: none; border-color: #946FB2; }
+    .modal-input:focus { outline: none; border-color: var(--primary); }
     .modal-input::placeholder { color: #b0a4c4; }
 
     .modal-btns { display: flex; gap: 10px; }
@@ -348,8 +350,8 @@
       font-family: inherit;
     }
 
-    .modal-btn-cancel { background: #F0E9F6; color: #6b3fa0; }
-    .modal-btn-confirm { background: #946FB2; color: #fff; font-weight: 600; }
+    .modal-btn-cancel { background: var(--bg); color: var(--accent); }
+    .modal-btn-confirm { background: var(--primary); color: #fff; font-weight: 600; }
 
     /* ========== Toast ========== */
     .save-toast {
@@ -376,7 +378,7 @@
       width: 52px;
       height: 52px;
       border-radius: 16px;
-      background: #946FB2;
+      background: var(--primary);
       border: none;
       color: #fff;
       font-size: 1.4rem;
@@ -393,7 +395,7 @@
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: #946FB2;
+      background: var(--primary);
       border: none;
       color: #fff;
       font-size: 1.2rem;
@@ -447,7 +449,7 @@
       padding: 14px 16px;
       border: none;
       border-radius: 12px;
-      background: #F7F2FB;
+      background: var(--card);
       color: #2d2d3a;
       font-size: 0.9rem;
       font-weight: 500;
@@ -457,7 +459,7 @@
       transition: background 0.2s;
     }
     .action-btn:active { background: #ede5f4; }
-    .action-btn i { width: 20px; text-align: center; color: #946FB2; }
+    .action-btn i { width: 20px; text-align: center; color: var(--primary); }
 
     .action-btn-danger { color: #ef4444; }
     .action-btn-danger i { color: #ef4444; }
@@ -471,7 +473,7 @@
 
     /* ========== 记录页面 ========== */
     .record-section {
-      background: #F7F2FB;
+      background: var(--card);
       border-radius: 20px;
       padding: 18px 16px;
       margin-top: 60px;
@@ -488,7 +490,7 @@
     .record-title {
       font-size: 0.95rem;
       font-weight: 600;
-      color: #6b3fa0;
+      color: var(--accent);
     }
 
     .record-month {
@@ -514,7 +516,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #946FB2;
+      color: var(--primary);
       font-size: 0.85rem;
       flex-shrink: 0;
     }
@@ -531,7 +533,7 @@
     .record-input {
       width: 100%;
       padding: 8px 10px;
-      background: #F7F2FB;
+      background: var(--card);
       border: 1px solid rgba(148,111,178,0.15);
       border-radius: 8px;
       font-family: 'JetBrains Mono', monospace;
@@ -539,7 +541,7 @@
       color: #2d2d3a;
       transition: border-color 0.2s;
     }
-    .record-input:focus { outline: none; border-color: #946FB2; }
+    .record-input:focus { outline: none; border-color: var(--primary); }
     .record-input::placeholder { color: #ccc; }
 
     .record-status {
@@ -550,7 +552,7 @@
       white-space: nowrap;
       flex-shrink: 0;
     }
-    .record-status.filled { background: rgba(148,111,178,0.12); color: #946FB2; }
+    .record-status.filled { background: rgba(148,111,178,0.12); color: var(--primary); }
     .record-status.empty { background: rgba(239,68,68,0.1); color: #ef4444; }
 
     .save-record-btn {
@@ -559,7 +561,7 @@
       margin-top: 12px;
       border: none;
       border-radius: 12px;
-      background: #946FB2;
+      background: var(--primary);
       color: #fff;
       font-size: 0.9rem;
       font-weight: 600;
@@ -596,14 +598,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #946FB2;
+      color: var(--primary);
       font-size: 0.8rem;
     }
 
     .record-card-name {
       font-size: 0.8rem;
       font-weight: 600;
-      color: #6b3fa0;
+      color: var(--accent);
       margin-bottom: 8px;
       white-space: nowrap;
       overflow: hidden;
@@ -666,7 +668,7 @@
 
     .num-key.fn {
       background: #ede5f4;
-      color: #6b3fa0;
+      color: var(--accent);
       font-size: 0.85rem;
       font-weight: 600;
       font-family: 'Outfit', sans-serif;
@@ -674,7 +676,7 @@
     .num-key.fn:active { background: #ddd0ea; }
 
     .num-key.confirm {
-      background: #946FB2;
+      background: var(--primary);
       color: #fff;
       font-size: 0.9rem;
       font-weight: 600;

@@ -10,13 +10,15 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="icon" href="icon.png" type="image/png">
   <meta name="theme-color" content="#F0E9F6">
+  <link rel="stylesheet" href="js/theme.css">
+  <script src="js/theme.js"></script>
   <script src="js/supabase.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #F0E9F6;
+      background: var(--bg);
       min-height: 100vh;
       min-height: 100dvh;
       color: #2d2d3a;
@@ -32,7 +34,7 @@
     .page-title {
       font-size: 1.2rem;
       font-weight: 700;
-      color: #6b3fa0;
+      color: var(--accent);
       margin-bottom: 24px;
     }
 
@@ -67,7 +69,7 @@
     }
 
     .menu-card {
-      background: #F7F2FB;
+      background: var(--card);
       border-radius: 16px;
       overflow: hidden;
       margin-bottom: 20px;
@@ -101,6 +103,11 @@
       font-weight: 500;
     }
 
+    .menu-icon-primary {
+      background: rgba(148,111,178,0.1);
+      color: var(--primary);
+    }
+
     .menu-arrow {
       color: #b0a4c4;
       font-size: 0.85rem;
@@ -132,7 +139,7 @@
       margin-top: 30px;
       cursor: pointer;
     }
-    .version:active { color: #946FB2; }
+    .version:active { color: var(--primary); }
 
     /* ========== 版本历史弹窗 ========== */
     .modal-overlay {
@@ -188,7 +195,7 @@
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.85rem;
       font-weight: 600;
-      color: #6b3fa0;
+      color: var(--accent);
     }
 
     .version-date {
@@ -225,8 +232,8 @@
       margin-top: 16px;
       border: none;
       border-radius: 12px;
-      background: #F0E9F6;
-      color: #6b3fa0;
+      background: var(--bg);
+      color: var(--accent);
       font-size: 0.9rem;
       font-weight: 500;
       font-family: inherit;
@@ -234,10 +241,80 @@
     }
     .modal-close:active { background: #ede5f4; }
 
+    /* ========== 主题选择 ========== */
+    .theme-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .theme-item {
+      display: flex;
+      align-items: center;
+      padding: 14px 16px;
+      background: var(--card);
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+    }
+    .theme-item:active { transform: scale(0.98); }
+    .theme-item.active {
+      border-color: var(--primary, #946FB2);
+      background: rgba(148,111,178,0.08);
+    }
+
+    .theme-color {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      margin-right: 14px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .theme-info {
+      flex: 1;
+    }
+
+    .theme-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #2d2d3a;
+      margin-bottom: 2px;
+    }
+
+    .theme-desc {
+      font-size: 0.75rem;
+      color: #9ca3af;
+    }
+
+    .theme-check {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid #d1d5db;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .theme-item.active .theme-check {
+      background: var(--primary, #946FB2);
+      border-color: var(--primary, #946FB2);
+      color: #fff;
+    }
+
     .note-textarea {
       width: 100%;
       padding: 12px 14px;
-      background: #F7F2FB;
+      background: var(--card);
       border: 1px solid rgba(148,111,178,0.2);
       border-radius: 12px;
       color: #2d2d3a;
@@ -248,7 +325,7 @@
       min-height: 80px;
       transition: border-color 0.2s;
     }
-    .note-textarea:focus { outline: none; border-color: #946FB2; }
+    .note-textarea:focus { outline: none; border-color: var(--primary); }
     .note-textarea::placeholder { color: #b0a4c4; }
 
     .modal-btns { display: flex; gap: 10px; }
@@ -264,8 +341,8 @@
       font-family: inherit;
     }
 
-    .modal-btn-cancel { background: #F0E9F6; color: #6b3fa0; }
-    .modal-btn-confirm { background: #946FB2; color: #fff; font-weight: 600; }
+    .modal-btn-cancel { background: var(--bg); color: var(--accent); }
+    .modal-btn-confirm { background: var(--primary); color: #fff; font-weight: 600; }
 
     .save-toast {
       position: fixed;
@@ -315,14 +392,14 @@
     }
 
     .nav-item i { font-size: 1.15rem; }
-    .nav-item.active { color: #946FB2; }
-    .nav-item.active i { color: #946FB2; }
+    .nav-item.active { color: var(--primary); }
+    .nav-item.active i { color: var(--primary); }
 
     .nav-add-btn {
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: #946FB2;
+      background: var(--primary);
       border: none;
       color: #fff;
       font-size: 1.2rem;
@@ -347,10 +424,17 @@
 
     <div class="menu-card">
       <div class="menu-item" onclick="showNoteModal()">
-        <div class="menu-icon" style="background:rgba(148,111,178,0.1);color:#946FB2;">
+        <div class="menu-icon menu-icon-primary">
           <i class="fa-solid fa-pen-to-square"></i>
         </div>
         <div class="menu-text">添加备注</div>
+        <div class="menu-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+      </div>
+      <div class="menu-item" onclick="showThemeModal()">
+        <div class="menu-icon menu-icon-primary">
+          <i class="fa-solid fa-palette"></i>
+        </div>
+        <div class="menu-text">主题换肤</div>
         <div class="menu-arrow"><i class="fa-solid fa-chevron-right"></i></div>
       </div>
       <div class="menu-item" onclick="handleLogout()">
@@ -362,7 +446,7 @@
       </div>
     </div>
 
-    <div class="version" onclick="showVersionModal()">Budget&nbsp;&nbsp;v1.1.0</div>
+    <div class="version" onclick="showVersionModal()">Budget&nbsp;&nbsp;v1.2.0</div>
   </div>
 
   <!-- 备注弹窗 -->
@@ -382,6 +466,18 @@
     <div class="modal-box">
       <div class="modal-title">版本历史</div>
       <ul class="version-list">
+        <li class="version-item">
+          <div class="version-head">
+            <span class="version-tag">v1.2.0</span>
+            <span class="version-date">2026-07-29</span>
+          </div>
+          <ul class="version-changes">
+            <li>主题换肤功能（5种皮肤可选）</li>
+            <li>环形图标注优化与间距调整</li>
+            <li>月份选择器修复</li>
+            <li>全站颜色动态化适配主题切换</li>
+          </ul>
+        </li>
         <li class="version-item">
           <div class="version-head">
             <span class="version-tag">v1.1.0</span>
@@ -410,6 +506,15 @@
         </li>
       </ul>
       <button class="modal-close" onclick="hideVersionModal()">关闭</button>
+    </div>
+  </div>
+
+  <!-- 主题选择弹窗 -->
+  <div class="modal-overlay" id="themeModal">
+    <div class="modal-box">
+      <div class="modal-title">主题换肤</div>
+      <div class="theme-list" id="themeList"></div>
+      <button class="modal-close" onclick="hideThemeModal()">关闭</button>
     </div>
   </div>
 
@@ -488,6 +593,45 @@
     document.getElementById('versionModal').addEventListener('click', e => {
       if (e.target === e.currentTarget) hideVersionModal();
     });
+
+    // ============ 主题换肤 ============
+    function showThemeModal() {
+      renderThemeList();
+      document.getElementById('themeModal').classList.add('show');
+    }
+
+    function hideThemeModal() {
+      document.getElementById('themeModal').classList.remove('show');
+    }
+
+    document.getElementById('themeModal').addEventListener('click', e => {
+      if (e.target === e.currentTarget) hideThemeModal();
+    });
+
+    function renderThemeList() {
+      const list = document.getElementById('themeList');
+      list.innerHTML = Object.entries(THEMES).map(([key, theme]) => `
+        <div class="theme-item ${currentTheme === key ? 'active' : ''}" onclick="selectTheme('${key}')">
+          <div class="theme-color" style="background:${theme.primary};">
+            <i class="fa-solid fa-check" style="display:${currentTheme === key ? 'block' : 'none'}"></i>
+          </div>
+          <div class="theme-info">
+            <div class="theme-name">${theme.name}</div>
+            <div class="theme-desc">${theme.desc}</div>
+          </div>
+          <div class="theme-check">
+            <i class="fa-solid fa-check" style="font-size:0.7rem;display:${currentTheme === key ? 'block' : 'none'}"></i>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function selectTheme(key) {
+      applyTheme(key);
+      renderThemeList();
+      // 刷新页面以应用所有颜色变化
+      setTimeout(() => location.reload(), 200);
+    }
   </script>
 </body>
 </html>
