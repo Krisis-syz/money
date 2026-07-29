@@ -464,6 +464,7 @@
       max-width: 300px;
       padding: 24px 20px;
       animation: scaleIn 0.25s ease;
+      overflow: hidden;
     }
 
     @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
@@ -484,7 +485,8 @@
 
     .month-input-field {
       flex: 1;
-      padding: 12px;
+      min-width: 0;
+      padding: 12px 8px;
       background: #F7F2FB;
       border: 1px solid rgba(148,111,178,0.2);
       border-radius: 12px;
@@ -492,6 +494,7 @@
       font-size: 1rem;
       text-align: center;
       color: #2d2d3a;
+      box-sizing: border-box;
     }
     .month-input-field:focus { outline: none; border-color: #946FB2; }
 
@@ -525,6 +528,11 @@
 
     .month-input-cancel { background: #F0E9F6; color: #6b3fa0; }
     .month-input-confirm { background: #946FB2; color: #fff; font-weight: 600; }
+
+    @media (max-width: 340px) {
+      .month-input-box { padding: 20px 16px; }
+      .month-input-field { font-size: 0.9rem; padding: 10px 6px; }
+    }
   </style>
 </head>
 <body>
