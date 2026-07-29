@@ -156,7 +156,23 @@ function renderTrendChart() {
     data: { labels, datasets },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: !isTotal, position: 'bottom', labels: { boxWidth: 10, font: { size: 10 }, padding: 8 } } },
+      plugins: {
+        legend: {
+          display: !isTotal, position: 'bottom',
+          labels: {
+            boxWidth: 10, font: { size: 10 }, padding: 8,
+            generateLabels: (chart) => {
+              return chart.data.datasets.map((ds, i) => ({
+                text: ds.label,
+                fillStyle: ds.borderColor,
+                strokeStyle: ds.borderColor,
+                hidden: false,
+                index: i
+              }));
+            }
+          }
+        }
+      },
       scales: {
         x: { grid: { display: false }, ticks: { maxTicksLimit: 6, color: '#9ca3af', font: { size: 10 } } },
         y: {
