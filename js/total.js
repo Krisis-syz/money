@@ -338,8 +338,8 @@ function renderCategoryPie() {
         ctx.beginPath();
         ctx.moveTo(ex, ey);
         ctx.lineTo(ex + (isRight ? lineW : -lineW), ey);
-        ctx.strokeStyle = '#ddd';
-        ctx.lineWidth = 0.8;
+        ctx.strokeStyle = '#ccc';
+        ctx.lineWidth = 1;
         ctx.stroke();
 
         // 第二行（类型 + 百分比）
