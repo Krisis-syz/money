@@ -263,6 +263,7 @@ function renderCategoryPie() {
   const values = Object.values(typeTotals);
   const colors = labels.map(t => TYPE_COLORS[t]);
 
+
   // 自定义插件：画引线 + 标注文字 + 横线分隔
   const catLabelPlugin = {
     id: 'catLabelPlugin',
@@ -284,12 +285,13 @@ function renderCategoryPie() {
         const sx = centerX + Math.cos(angle) * outerR;
         const sy = centerY + Math.sin(angle) * outerR;
         // 引线终点：向外延伸
-        const lineEnd = 22;
-        const ex = centerX + Math.cos(angle) * (outerR + lineEnd);
-        const ey = centerY + Math.sin(angle) * (outerR + lineEnd);
+        const lineLen = 22;
+        const ex = centerX + Math.cos(angle) * (outerR + lineLen);
+        const ey = centerY + Math.sin(angle) * (outerR + lineLen);
 
         ctx.save();
-        // 画斜线
+
+        // 画斜线（饼图边缘 → 终点）
         ctx.beginPath();
         ctx.moveTo(sx, sy);
         ctx.lineTo(ex, ey);
@@ -297,25 +299,39 @@ function renderCategoryPie() {
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        // 文字定位：根据角度决定左右对齐
+        // 根据角度决定左右
         const isRight = Math.cos(angle) >= 0;
-        const textX = ex + (isRight ? 6 : -6);
-        const line1 = '¥' + fmtNum(val);
-        const line2 = label + ' ' + pct + '%';
+        const gap = 6; // 斜线终点到文字的间距
+        const sepW = 30; // 横线半宽
 
-        ctx.font = '500 11px "JetBrains Mono", monospace';
-        ctx.fillStyle = '#666';
+        // 横线：从斜线终点开始，向文字方向延伸
+        const horizStartX = ex;
+        const horizEndX = isRight ? ex + gap : ex - gap;
+        ctx.beginPath();
+        ctx.moveTo(horizStartX, ey);
+        ctx.lineTo(horizEndX, ey);
+        ctx.strokeStyle = '#ccc';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // 文字X：横线末端再偏移
+        const textX = isRight ? horizEndX + 3 : horizEndX - 3;
+        const line1 = '¥' + fmtNum(val);
+        const line2 = label + '  ' + pct + '%';
+
         ctx.textBaseline = 'middle';
+        ctx.textAlign = isRight ? 'left' : 'right';
 
         // 第一行（金额）
-        ctx.textAlign = isRight ? 'left' : 'right';
+        ctx.font = '500 11px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#666';
         ctx.fillText(line1, textX, ey - 8);
 
-        // 横线分隔
-        const sepW = 28;
+        // 横线分隔（在文字下方，与斜线终点对齐）
+        const sepHalf = sepW / 2;
         ctx.beginPath();
-        ctx.moveTo(textX - (isRight ? 0 : sepW), ey);
-        ctx.lineTo(textX + (isRight ? sepW : 0), ey);
+        ctx.moveTo(ex - (isRight ? 0 : sepHalf), ey);
+        ctx.lineTo(ex + (isRight ? sepHalf : 0), ey);
         ctx.strokeStyle = '#ddd';
         ctx.lineWidth = 0.8;
         ctx.stroke();
@@ -340,7 +356,7 @@ function renderCategoryPie() {
     options: {
       responsive: true, maintainAspectRatio: false,
       cutout: '60%',
-      layout: { padding: { top: 10, bottom: 10, left: 30, right: 30 } },
+      layout: { padding: { top: 20, bottom: 10, left: 40, right: 40 } },
       plugins: {
         legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 11 }, padding: 12 } }
       }
