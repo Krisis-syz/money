@@ -469,33 +469,38 @@ function showMonthInput(target) {
 
 function renderWheel(containerId, items, selected, type) {
   const container = document.getElementById(containerId);
-  container.innerHTML = items.map(item => {
+  // 前后各加一个占位项，确保首尾都能居中
+  const pad = '<div class="picker-pad"></div>';
+  container.innerHTML = pad + items.map(item => {
     const val = type === 'month' ? String(item).padStart(2, '0') : item;
     const isActive = item === selected;
     return `<div class="picker-item ${isActive ? 'active' : ''}" data-value="${item}">${type === 'month' ? val + '月' : val + '年'}</div>`;
-  }).join('');
+  }).join('') + pad;
 
   // 滚动到选中项
-  const activeEl = container.querySelector('.active');
+  const activeEl = container.querySelector('.picker-item.active');
   if (activeEl) {
     setTimeout(() => {
       container.scrollTop = activeEl.offsetTop - container.clientHeight / 2 + activeEl.clientHeight / 2;
     }, 50);
   }
 
-  // 监听滚动
-  container.addEventListener('scroll', () => {
-    const items = container.querySelectorAll('.picker-item');
-    const center = container.scrollTop + container.clientHeight / 2;
-    let closest = items[0];
-    let minDist = Infinity;
-    items.forEach(item => {
-      const dist = Math.abs(item.offsetTop + item.clientHeight / 2 - center);
-      if (dist < minDist) { minDist = dist; closest = item; }
+  // 监听滚动（替换innerHTML不会清除容器上的事件监听器，用标记防重复）
+  if (!container._hasScrollListener) {
+    container._hasScrollListener = true;
+    container.addEventListener('scroll', () => {
+      const allItems = container.querySelectorAll('.picker-item[data-value]');
+      const center = container.scrollTop + container.clientHeight / 2;
+      let closest = allItems[0];
+      let minDist = Infinity;
+      allItems.forEach(item => {
+        const dist = Math.abs(item.offsetTop + item.clientHeight / 2 - center);
+        if (dist < minDist) { minDist = dist; closest = item; }
+      });
+      allItems.forEach(item => item.classList.remove('active'));
+      if (closest) closest.classList.add('active');
     });
-    items.forEach(item => item.classList.remove('active'));
-    closest.classList.add('active');
-  });
+  }
 }
 
 function hideMonthInput() {
