@@ -327,7 +327,7 @@ function renderCategoryPie() {
         const w1 = ctx.measureText(line1).width;
         ctx.font = '500 10px Outfit, sans-serif';
         const w2 = ctx.measureText(line2).width;
-        const lineW = Math.max(w1, w2);
+        const lineW = Math.max(w1, w2) + 8;
 
         // 第一行（金额）
         ctx.font = '500 11px "JetBrains Mono", monospace';
