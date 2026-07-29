@@ -302,7 +302,7 @@ function renderCategoryPie() {
         // 根据角度决定左右
         const isRight = Math.cos(angle) >= 0;
         const gap = 6; // 斜线终点到文字的间距
-        const sepW = 44; // 横线半宽
+
 
         // 横线：从斜线终点开始，向文字方向延伸
         const horizStartX = ex;
@@ -322,16 +322,22 @@ function renderCategoryPie() {
         ctx.textBaseline = 'middle';
         ctx.textAlign = isRight ? 'left' : 'right';
 
+        // 测量文字宽度，横线与文字等长
+        ctx.font = '500 11px "JetBrains Mono", monospace';
+        const w1 = ctx.measureText(line1).width;
+        ctx.font = '500 10px Outfit, sans-serif';
+        const w2 = ctx.measureText(line2).width;
+        const lineW = Math.max(w1, w2);
+
         // 第一行（金额）
         ctx.font = '500 11px "JetBrains Mono", monospace';
         ctx.fillStyle = '#666';
         ctx.fillText(line1, textX, ey - 8);
 
-        // 横线分隔（在文字下方，与斜线终点对齐）
-        const sepHalf = sepW / 2;
+        // 横线分隔（与文字等长）
         ctx.beginPath();
-        ctx.moveTo(ex - (isRight ? 0 : sepHalf), ey);
-        ctx.lineTo(ex + (isRight ? sepHalf : 0), ey);
+        ctx.moveTo(ex, ey);
+        ctx.lineTo(ex + (isRight ? lineW : -lineW), ey);
         ctx.strokeStyle = '#ddd';
         ctx.lineWidth = 0.8;
         ctx.stroke();
