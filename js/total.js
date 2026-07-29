@@ -273,7 +273,7 @@ function renderCategoryPie() {
       responsive: true, maintainAspectRatio: false,
       cutout: '60%',
       plugins: {
-        legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 11 }, padding: 12 } }
+        legend: { display: true, position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', font: { size: 11 }, padding: 12 } }
       }
     }
   });
