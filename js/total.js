@@ -459,7 +459,7 @@ function renderAssetPie(container) {
   container.style.height = 'auto';
   container.innerHTML = `
     <div style="display:flex;gap:16px;align-items:center;justify-content:center;padding:0 4px;">
-      <div style="flex:0 0 150px;height:150px;"><canvas id="assetPieCanvas"></canvas></div>
+      <div style="flex:0 0 180px;height:180px;"><canvas id="assetPieCanvas"></canvas></div>
       <div style="display:flex;flex-direction:column;gap:10px;">
         ${items.map(item => {
           const pct = total > 0 ? (item.amount / total * 100).toFixed(1) : '0.0';
