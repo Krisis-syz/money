@@ -344,7 +344,7 @@
     let chartRange = '1y';
     let trendChart = null;
     let currentMonth = getCurrentYearMonth();
-    let historyShowCount = 12;
+    let historyShowCount = 6;
 
     document.addEventListener('DOMContentLoaded', async () => {
       await waitForSupabase();
@@ -505,7 +505,7 @@
     }
 
     function showMoreHistory() {
-      historyShowCount += 12;
+      historyShowCount += 6;
       renderHistory();
     }
 
