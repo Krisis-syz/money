@@ -419,8 +419,8 @@ function renderDistAsset(container) {
   const total = items.reduce((s, i) => s + i.amount, 0);
 
   container.innerHTML = `
-    <div style="display:flex;gap:20px;align-items:center;justify-content:flex-start;padding:4px 8px;">
-      <div style="flex:0 0 200px;height:200px;"><canvas id="distAssetCanvas"></canvas></div>
+    <div style="display:flex;gap:20px;align-items:center;justify-content:flex-start;padding:4px 0 4px 0;">
+      <div style="flex:0 0 200px;height:200px;margin-left:-8px;"><canvas id="distAssetCanvas"></canvas></div>
       <div style="display:flex;flex-direction:column;gap:14px;">
         ${items.map(item => {
           const pct = total > 0 ? (item.amount / total * 100).toFixed(1) : '0.0';
