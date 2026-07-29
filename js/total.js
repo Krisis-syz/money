@@ -444,27 +444,44 @@ function renderAssetViz() {
 }
 
 function renderAssetPie(container) {
-  const ctx = document.createElement('canvas');
-  container.innerHTML = '';
-  container.appendChild(ctx);
-  container.style.height = '220px';
-
-  if (assetPieChart) assetPieChart.destroy();
-
-  const items = allSources.map(s => ({
-    name: s.name,
-    amount: getSourceAmount(s.id, assetMonth)
-  })).filter(i => i.amount > 0);
-
   const COLORS = ['#946FB2', '#6366f1', '#ec4899', '#14b8a6', '#f59e0b', '#3b82f6', '#ef4444', '#22c55e'];
 
-  assetPieChart = new Chart(ctx, {
+  const items = allSources.map((s, i) => ({
+    name: s.name,
+    icon: s.icon || 'fa-solid fa-wallet',
+    amount: getSourceAmount(s.id, assetMonth),
+    color: COLORS[i % COLORS.length]
+  })).filter(i => i.amount > 0).sort((a, b) => b.amount - a.amount);
+
+  const total = items.reduce((s, i) => s + i.amount, 0);
+
+  // 布局：左饼图 + 右图例
+  container.style.height = 'auto';
+  container.innerHTML = `
+    <div style="display:flex;gap:8px;align-items:center;">
+      <div style="flex:0 0 140px;height:140px;"><canvas id="assetPieCanvas"></canvas></div>
+      <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;">
+        ${items.map(item => {
+          const pct = total > 0 ? (item.amount / total * 100).toFixed(1) : '0.0';
+          return `<div style="display:flex;align-items:center;gap:4px;font-size:0.7rem;color:#666;">
+            <span style="width:8px;height:8px;border-radius:2px;background:${item.color};flex-shrink:0;"></span>
+            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.name} ${pct}%</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+
+  const pieCtx = document.getElementById('assetPieCanvas');
+  if (assetPieChart) assetPieChart.destroy();
+
+  assetPieChart = new Chart(pieCtx, {
     type: 'doughnut',
     data: {
       labels: items.map(i => i.name),
       datasets: [{
         data: items.map(i => i.amount),
-        backgroundColor: items.map((_, i) => COLORS[i % COLORS.length]),
+        backgroundColor: items.map(i => i.color),
         borderWidth: 0
       }]
     },
@@ -472,7 +489,16 @@ function renderAssetPie(container) {
       responsive: true, maintainAspectRatio: false,
       cutout: '55%',
       plugins: {
-        legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 10 }, padding: 8 } }
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: () => '',
+            label: (ctx) => {
+              const item = items[ctx.dataIndex];
+              return item.name + '：¥' + fmtNum(ctx.raw);
+            }
+          }
+        }
       }
     }
   });
