@@ -263,15 +263,84 @@ function renderCategoryPie() {
   const values = Object.values(typeTotals);
   const colors = labels.map(t => TYPE_COLORS[t]);
 
+  // 自定义插件：画引线 + 标注文字 + 横线分隔
+  const catLabelPlugin = {
+    id: 'catLabelPlugin',
+    afterDraw(chart) {
+      const meta = chart.getDatasetMeta(0);
+      const { ctx } = chart;
+      const chartArea = chart.chartArea;
+      const centerX = (chartArea.left + chartArea.right) / 2;
+      const centerY = (chartArea.top + chartArea.bottom) / 2;
+
+      meta.data.forEach((arc, i) => {
+        const angle = (arc.startAngle + arc.endAngle) / 2;
+        const outerR = arc.outerRadius;
+        const val = values[i];
+        const pct = total > 0 ? (val / total * 100).toFixed(0) : 0;
+        const label = labels[i];
+
+        // 引线起点：饼图边缘
+        const sx = centerX + Math.cos(angle) * outerR;
+        const sy = centerY + Math.sin(angle) * outerR;
+        // 引线终点：向外延伸
+        const lineEnd = 22;
+        const ex = centerX + Math.cos(angle) * (outerR + lineEnd);
+        const ey = centerY + Math.sin(angle) * (outerR + lineEnd);
+
+        ctx.save();
+        // 画斜线
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(ex, ey);
+        ctx.strokeStyle = '#ccc';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // 文字定位：根据角度决定左右对齐
+        const isRight = Math.cos(angle) >= 0;
+        const textX = ex + (isRight ? 6 : -6);
+        const line1 = '¥' + fmtNum(val);
+        const line2 = label + ' ' + pct + '%';
+
+        ctx.font = '500 11px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#666';
+        ctx.textBaseline = 'middle';
+
+        // 第一行（金额）
+        ctx.textAlign = isRight ? 'left' : 'right';
+        ctx.fillText(line1, textX, ey - 8);
+
+        // 横线分隔
+        const sepW = 28;
+        ctx.beginPath();
+        ctx.moveTo(textX - (isRight ? 0 : sepW), ey);
+        ctx.lineTo(textX + (isRight ? sepW : 0), ey);
+        ctx.strokeStyle = '#ddd';
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+
+        // 第二行（类型 + 百分比）
+        ctx.font = '500 10px Outfit, sans-serif';
+        ctx.fillStyle = '#999';
+        ctx.fillText(line2, textX, ey + 9);
+
+        ctx.restore();
+      });
+    }
+  };
+
   catPieChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
       labels,
       datasets: [{ data: values, backgroundColor: colors, borderWidth: 0 }]
     },
+    plugins: [catLabelPlugin],
     options: {
       responsive: true, maintainAspectRatio: false,
       cutout: '60%',
+      layout: { padding: { top: 10, bottom: 10, left: 30, right: 30 } },
       plugins: {
         legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 11 }, padding: 12 } }
       }
