@@ -549,8 +549,9 @@ function renderAssetBar(container) {
   // 计算柱形宽度
   let barWidths = [];
   if (assetSortMode === 'amount') {
-    const maxAmount = items.length > 0 ? items[0].amount : 1;
-    barWidths = items.map(i => maxAmount > 0 ? (i.amount / maxAmount * 100) : 0);
+    const positives = items.filter(i => i.amount > 0);
+    const maxAmount = positives.length > 0 ? positives[0].amount : 1;
+    barWidths = items.map(i => i.amount > 0 ? (maxAmount > 0 ? (i.amount / maxAmount * 100) : 0) : 0);
   } else {
     // 按收支：正数组和负数组分别计算，正数组最大100%，负数组亏损最多100%
     const positives = items.filter(i => i.pnl >= 0);
@@ -569,7 +570,11 @@ function renderAssetBar(container) {
     <div class="bar-list">
       ${items.map((item, idx) => {
         let bgClass, barColor;
-        if (assetSortMode === 'amount') {
+        const isNegAmount = assetSortMode === 'amount' && item.amount < 0;
+        if (isNegAmount) {
+          bgClass = '';
+          barColor = '';
+        } else if (assetSortMode === 'amount') {
           bgClass = 'flat';
           barColor = '#d8c6e8';
         } else {
@@ -578,9 +583,11 @@ function renderAssetBar(container) {
           else { bgClass = 'flat'; barColor = 'rgba(156,163,175,0.08)'; }
         }
         const pnlColor = item.pnl > 0 ? '#ef4444' : item.pnl < 0 ? '#22c55e' : '#9ca3af';
+        const nameColor = isNegAmount ? '#ef4444' : '';
+        const nameWeight = isNegAmount ? 'font-weight:600;' : '';
         return `<div class="bar-row">
-          <div class="bar-bg ${bgClass}" style="width:${barWidths[idx]}%"></div>
-          <div class="bar-name"><i class="${item.icon}" style="margin-right:15px;opacity:0.6;"></i>${item.name}</div>
+          ${bgClass ? `<div class="bar-bg ${bgClass}" style="width:${barWidths[idx]}%"></div>` : ''}
+          <div class="bar-name" style="color:${nameColor};${nameWeight}"><i class="${item.icon}" style="margin-right:15px;opacity:${isNegAmount ? '1' : '0.6'};"></i>${item.name}</div>
           <div class="bar-amount">¥${fmtNum(item.amount)}</div>
           <div class="bar-pnl" style="color:${pnlColor}">${item.pnl >= 0 ? '+' + fmtNum(item.pnl) : fmtNum(item.pnl)}</div>
         </div>`;
