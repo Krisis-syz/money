@@ -24,7 +24,8 @@ function hexToRgb(hex) {
 }
 
 function fmtNum(n) {
-  return Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const sign = n < 0 ? '-' : '';
+  return sign + Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 function fmtMonth(ym) {
