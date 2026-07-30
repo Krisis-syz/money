@@ -134,7 +134,7 @@ function renderTotalCard() {
   });
   const loanEl = document.getElementById('totalLoan');
   if (loanTotal > 0) {
-    loanEl.textContent = ' / 借贷：¥' + fmtNum(loanTotal);
+    loanEl.textContent = '（负债：¥' + fmtNum(loanTotal) + '）';
     loanEl.style.display = '';
   } else {
     loanEl.style.display = 'none';
