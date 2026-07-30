@@ -426,8 +426,8 @@ function calcQuestions() {
           icon: info.icon,
           iconBg: info.bg,
           iconColor: info.color,
-          label: `${type}资产较上月${dir} ${Math.abs(change).toFixed(1)}%`,
-          placeholder: `请填写${type}资产${dir}的原因...`
+          label: `${type}类资产较上月${dir} ${Math.abs(change).toFixed(1)}%`,
+          placeholder: `请填写${type}类资产${dir}的原因...`
         });
       }
     }
