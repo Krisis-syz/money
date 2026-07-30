@@ -12,6 +12,8 @@ let distMode = 'type';
 let assetSortMode = 'pnl';
 let assetMonth = currentMonth;
 let assetPieChart = null;
+let loanMonth = currentMonth;
+let loanPieChart = null;
 let monthInputTarget = null;
 
 const TYPE_COLORS = (() => {
@@ -31,6 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderTrendChart();
   renderHistory();
   renderDistContent();
+  renderLoanContent();
   renderAssetViz();
 });
 
@@ -129,7 +132,7 @@ function renderTotalCard() {
   const subEl = document.getElementById('totalSub');
   if (loanTotal > 0) {
     const net = total - loanTotal;
-    subEl.textContent = '净资产：¥' + fmtNum(net) + '   |   负债：¥' + fmtNum(loanTotal);
+    subEl.innerHTML = '净资产：¥' + fmtNum(net) + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;负债：¥' + fmtNum(loanTotal);
     subEl.style.display = '';
   } else {
     subEl.style.display = 'none';
@@ -503,6 +506,82 @@ function renderDistAsset(container) {
   });
 }
 
+// ============ 负债情况 ============
+function renderLoanContent() {
+  document.getElementById('loanMonthText').textContent = loanMonth;
+  const container = document.getElementById('loanContent');
+
+  const loanSources = allSources.filter(s => s.type === '借贷');
+  const loanItems = loanSources.map(s => ({
+    name: s.name,
+    amount: Math.abs(getSourceAmount(s.id, loanMonth))
+  })).filter(i => i.amount > 0).sort((a, b) => b.amount - a.amount);
+
+  const loanTotal = loanItems.reduce((s, i) => s + i.amount, 0);
+
+  if (loanItems.length === 0 || loanTotal === 0) {
+    container.innerHTML = '<div class="empty-hint"><i class="fa-solid fa-shield-halved"></i>您没有负债情况</div>';
+    return;
+  }
+
+  const posTotal = getMonthTotal(loanMonth);
+
+  container.innerHTML = '<div class="chart-wrap" style="height:220px;"><canvas id="loanPieChart"></canvas></div><div class="cat-changes" id="loanChanges"></div>';
+
+  if (loanPieChart) loanPieChart.destroy();
+  const ctx = document.getElementById('loanPieChart');
+
+  const chartTotal = posTotal + loanTotal;
+  loanPieChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['正资产', '负债'],
+      datasets: [{
+        data: [posTotal, loanTotal],
+        backgroundColor: [getThemeColors().primary, '#ef4444'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '60%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: () => '',
+            label: (ctx) => {
+              const pct = chartTotal > 0 ? (ctx.raw / chartTotal * 100).toFixed(1) : '0.0';
+              return ctx.label + '：¥' + fmtNum(ctx.raw) + ' (' + pct + '%)';
+            }
+          }
+        }
+      }
+    }
+  });
+
+  document.getElementById('loanChanges').innerHTML = loanItems.map(item => {
+    const pct = loanTotal > 0 ? (item.amount / loanTotal * 100).toFixed(1) : '0.0';
+    return `<div class="cat-change">
+      <div class="cat-change-name"><span class="cat-dot" style="background:#ef4444"></span>${item.name}</div>
+      <div class="cat-change-val" style="color:#ef4444">¥${fmtNum(item.amount)}</div>
+      <div class="cat-change-pct" style="color:#ef4444">${pct}%</div>
+    </div>`;
+  }).join('');
+}
+
+function changeLoanMonth(delta) {
+  const [y, m] = loanMonth.split('-').map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  const newMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  if (newMonth > currentMonth) {
+    alert('不能选择未来的时间');
+    return;
+  }
+  loanMonth = newMonth;
+  renderLoanContent();
+}
+
 function changeCatMonth(delta) {
   const [y, m] = categoryMonth.split('-').map(Number);
   const d = new Date(y, m - 1 + delta, 1);
@@ -545,7 +624,7 @@ function renderAssetViz() {
 }
 
 function renderAssetBar(container) {
-  const items = allSources.filter(s => s.type !== '借贷').map(s => {
+  const items = allSources.map(s => {
     const amount = getSourceAmount(s.id, assetMonth);
     const prevAmount = getSourceAmount(s.id, getPrevMonth(assetMonth));
     const pnl = amount - prevAmount;
@@ -646,7 +725,7 @@ function changeAssetMonth(delta) {
 // ============ 月份选择弹窗 ============
 function showMonthInput(target) {
   monthInputTarget = target;
-  const current = target === 'cat' ? categoryMonth : assetMonth;
+  const current = target === 'cat' ? categoryMonth : target === 'loan' ? loanMonth : assetMonth;
   const [y, m] = current.split('-').map(Number);
 
   const curYear = new Date().getFullYear();
@@ -717,6 +796,9 @@ function confirmMonthInput() {
   if (monthInputTarget === 'cat') {
     categoryMonth = newMonth;
     renderDistContent();
+  } else if (monthInputTarget === 'loan') {
+    loanMonth = newMonth;
+    renderLoanContent();
   } else {
     assetMonth = newMonth;
     renderAssetViz();
