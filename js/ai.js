@@ -58,10 +58,11 @@ function simpleMarkdown(text) {
     .replace(/^## (.+)$/gm, '<h3>$1</h3>')
     .replace(/^# (.+)$/gm, '<h3>$1</h3>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/^- (.+)$/gm, '· $1')
+    .replace(/^- (.+)$/gm, '• $1')
     .replace(/\n/g, '<br>')
     .replace(/(<\/h3>)<br>/g, '$1')
-    .replace(/(<\/strong>)<br>/g, '$1');
+    .replace(/(<\/strong>)<br>/g, '$1')
+    .replace(/<br>(<div class="chart-placeholder)/g, '$1');
 }
 
 // 解析图表标记，返回HTML和图表配置
