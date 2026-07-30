@@ -58,7 +58,10 @@ function simpleMarkdown(text) {
     .replace(/^## (.+)$/gm, '<h3>$1</h3>')
     .replace(/^# (.+)$/gm, '<h3>$1</h3>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\n/g, '<br>');
+    .replace(/^- (.+)$/gm, '· $1')
+    .replace(/\n/g, '<br>')
+    .replace(/(<\/h3>)<br>/g, '$1')
+    .replace(/(<\/strong>)<br>/g, '$1');
 }
 
 // 解析图表标记，返回HTML和图表配置
@@ -608,7 +611,7 @@ function buildAIPrompt(userInput) {
     const d = cur - prev;
     const changePct = prev > 0 ? ((d / prev) * 100).toFixed(1) : '0.0';
     const arrow = d >= 0 ? '↑' : '↓';
-    return `${s.name}（ID:${s.id}）：¥${fmtNum(cur)}，上月¥${fmtNum(prev)}，${arrow}${Math.abs(changePct)}%`;
+    return `${s.name}（${s.type}）（ID:${s.id}）：¥${fmtNum(cur)}，上月¥${fmtNum(prev)}，${arrow}${Math.abs(changePct)}%`;
   }).join('\n');
 
   // 用户补充说明
