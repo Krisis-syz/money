@@ -393,7 +393,7 @@
 
       const tagsEl = document.getElementById('assetTags');
       tagsEl.innerHTML = `
-        <div class="asset-tag">收支 <span class="asset-tag-val" style="color:${diffColor}">${diff >= 0 ? '+' : '-'}${fmtNum(diff)}</span></div>
+        <div class="asset-tag">收支 <span class="asset-tag-val" style="color:${diffColor}">${diff >= 0 ? '+' : '-'}${fmtNum(Math.abs(diff))}</span></div>
         <div class="asset-tag">占比 <span class="asset-tag-val" style="color:#fbbf24">${pct}%</span></div>
         <div class="asset-tag">环比 <span class="asset-tag-val" style="color:${diffColor}">${diff >= 0 ? '+' : ''}${mom}%</span></div>
       `;
@@ -492,7 +492,7 @@
             let diff = '-', diffColor = '';
             if (prev) {
               const dv = d.amount - prev.amount;
-              diff = (dv >= 0 ? '+' : '-') + fmtNum(dv);
+              diff = (dv >= 0 ? '+' : '-') + fmtNum(Math.abs(dv));
               diffColor = dv >= 0 ? '#ef4444' : '#22c55e';
             }
             return `<tr>

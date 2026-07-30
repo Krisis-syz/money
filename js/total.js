@@ -102,7 +102,7 @@ function renderTotalCard() {
 
   const pnlEl = document.getElementById('totalPnl');
   if (prev > 0 || total > 0) {
-    pnlEl.textContent = (diff >= 0 ? '+' : '-') + fmtNum(diff) + '    本月';
+    pnlEl.textContent = (diff >= 0 ? '+' : '-') + fmtNum(Math.abs(diff)) + '    本月';
     pnlEl.style.color = diff >= 0 ? '#ef4444' : '#22c55e';
   } else {
     pnlEl.textContent = '暂无数据';
@@ -422,7 +422,7 @@ function renderDistType(container) {
     const sign = diff >= 0 ? '+' : '-';
     return `<div class="cat-change">
       <div class="cat-change-name"><span class="cat-dot" style="background:${typeColor}"></span>${tp}</div>
-      <div class="cat-change-val" style="color:${color}">${sign}${fmtNum(diff)}</div>
+      <div class="cat-change-val" style="color:${color}">${sign}${fmtNum(Math.abs(diff))}</div>
       <div class="cat-change-pct" style="color:${color}">${arrow}${pctChange}%</div>
     </div>`;
   }).join('');
