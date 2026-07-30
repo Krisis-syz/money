@@ -640,9 +640,14 @@
     <!-- 趋势图 + 历史记录 -->
     <div class="module">
       <div class="module-header">
-        <div class="module-tabs" id="trendTabs">
-          <button class="module-tab active" onclick="setTrendMode('total')">总资金</button>
-          <button class="module-tab" onclick="setTrendMode('category')">分类占比</button>
+        <div class="dropdown-wrap">
+          <button class="dropdown-btn" id="trendModeBtn" onclick="toggleTrendDropdown()">总资产 <i class="fa-solid fa-chevron-down"></i></button>
+          <div class="dropdown-menu" id="trendDropdown">
+            <div class="dropdown-item" onclick="setTrendMode('total')">总资产</div>
+            <div class="dropdown-item" onclick="setTrendMode('net')">净资产</div>
+            <div class="dropdown-item" onclick="setTrendMode('loan')">负债资产</div>
+            <div class="dropdown-item" onclick="setTrendMode('category')">分类占比</div>
+          </div>
         </div>
         <div class="dropdown-wrap" style="margin-left:auto;">
           <button class="dropdown-btn" id="rangeBtn" onclick="toggleRangeDropdown()">近一年 <i class="fa-solid fa-chevron-down"></i></button>

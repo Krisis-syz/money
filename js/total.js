@@ -146,11 +146,12 @@ function renderTrendChart() {
   if (trendChart) trendChart.destroy();
 
   const allMonths = [...new Set(allRecords.map(r => r.yearMonth))].sort();
-  const isTotal = trendMode === 'total';
+  const isAmount = trendMode === 'total' || trendMode === 'net' || trendMode === 'loan';
+  const showLegend = trendMode === 'category';
 
   let datasets, labels;
 
-  if (isTotal) {
+  if (trendMode === 'total') {
     const data = allMonths.map(m => ({ month: m, value: getMonthTotal(m) }));
     const filtered = filterByRange(data);
     labels = filtered.map(d => d.month);
@@ -166,6 +167,48 @@ function renderTrendChart() {
       borderColor: getThemeColors().primary,
       backgroundColor: gradient,
       pointBackgroundColor: getThemeColors().primary,
+      fill: true, tension: 0.4, pointRadius: 2.5, borderWidth: 2.5
+    }];
+  } else if (trendMode === 'net') {
+    const data = allMonths.map(m => {
+      const pos = getMonthTotal(m);
+      const loan = allSources.filter(s => s.type === '借贷').reduce((s, src) => s + Math.abs(getSourceAmount(src.id, m)), 0);
+      return { month: m, value: pos - loan };
+    });
+    const filtered = filterByRange(data);
+    labels = filtered.map(d => d.month);
+
+    const canvas = ctx.getContext('2d');
+    const gradient = canvas.createLinearGradient(0, 0, 0, 180);
+    const primaryRgb = hexToRgb(getThemeColors().primary);
+    gradient.addColorStop(0, `rgba(${primaryRgb},0.5)`);
+    gradient.addColorStop(1, `rgba(${primaryRgb},0.0)`);
+
+    datasets = [{
+      data: filtered.map(d => d.value),
+      borderColor: getThemeColors().primary,
+      backgroundColor: gradient,
+      pointBackgroundColor: getThemeColors().primary,
+      fill: true, tension: 0.4, pointRadius: 2.5, borderWidth: 2.5
+    }];
+  } else if (trendMode === 'loan') {
+    const data = allMonths.map(m => {
+      const loan = allSources.filter(s => s.type === '借贷').reduce((s, src) => s + Math.abs(getSourceAmount(src.id, m)), 0);
+      return { month: m, value: loan };
+    });
+    const filtered = filterByRange(data);
+    labels = filtered.map(d => d.month);
+
+    const canvas = ctx.getContext('2d');
+    const gradient = canvas.createLinearGradient(0, 0, 0, 180);
+    gradient.addColorStop(0, 'rgba(239,68,68,0.5)');
+    gradient.addColorStop(1, 'rgba(239,68,68,0.0)');
+
+    datasets = [{
+      data: filtered.map(d => d.value),
+      borderColor: '#ef4444',
+      backgroundColor: gradient,
+      pointBackgroundColor: '#ef4444',
       fill: true, tension: 0.4, pointRadius: 2.5, borderWidth: 2.5
     }];
   } else {
@@ -199,7 +242,7 @@ function renderTrendChart() {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: {
-          display: !isTotal, position: 'bottom',
+          display: showLegend, position: 'bottom',
           labels: {
             boxWidth: 10, font: { size: 10 }, padding: 8, color: '#9ca3af',
             generateLabels: (chart) => {
@@ -217,7 +260,7 @@ function renderTrendChart() {
         tooltip: {
           callbacks: {
             label: (ctx) => {
-              if (isTotal) return '¥' + fmtNum(ctx.raw);
+              if (isAmount) return '¥' + fmtNum(ctx.raw);
               return ctx.dataset.label + '：' + ctx.raw.toFixed(2) + '%';
             }
           }
@@ -230,7 +273,7 @@ function renderTrendChart() {
           grid: { color: 'rgba(148,111,178,0.08)', drawTicks: false },
           ticks: {
             color: '#9ca3af', font: { size: 10 },
-            callback: v => isTotal ? ('¥' + (v >= 1000 ? (v/1000).toFixed(1) + 'k' : v)) : v.toFixed(0) + '%'
+            callback: v => isAmount ? ('¥' + (v >= 1000 ? (v/1000).toFixed(1) + 'k' : v)) : v.toFixed(0) + '%'
           }
         }
       }
@@ -240,11 +283,26 @@ function renderTrendChart() {
 
 function setTrendMode(mode) {
   trendMode = mode;
-  document.querySelectorAll('#trendTabs .module-tab').forEach(btn => {
-    btn.classList.toggle('active', btn.textContent === (mode === 'total' ? '总资金' : '分类占比'));
-  });
+  const labels = { total: '总资产', net: '净资产', loan: '负债资产', category: '分类占比' };
+  document.getElementById('trendModeBtn').innerHTML = labels[mode] + ' <i class="fa-solid fa-chevron-down"></i>';
+  hideTrendDropdown();
   renderTrendChart();
 }
+
+function toggleTrendDropdown() {
+  document.getElementById('trendDropdown').classList.toggle('show');
+}
+
+function hideTrendDropdown() {
+  document.getElementById('trendDropdown').classList.remove('show');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#trendDropdown') && !e.target.closest('#trendModeBtn')) {
+    const el = document.getElementById('trendDropdown');
+    if (el) el.classList.remove('show');
+  }
+});
 
 function setRange(range) {
   chartRange = range;
