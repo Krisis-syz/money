@@ -532,8 +532,30 @@ function renderLoanContent() {
   const ctx = document.getElementById('loanPieChart');
 
   const chartTotal = posTotal + loanTotal;
+  const loanPct = chartTotal > 0 ? (loanTotal / chartTotal * 100).toFixed(1) : '0.0';
+
+  const loanCenterPlugin = {
+    id: 'loanCenterPlugin',
+    afterDraw(chart) {
+      const { ctx, chartArea } = chart;
+      const cx = (chartArea.left + chartArea.right) / 2;
+      const cy = (chartArea.top + chartArea.bottom) / 2;
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '600 18px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#ef4444';
+      ctx.fillText(loanPct + '%', cx, cy - 8);
+      ctx.font = '500 11px Outfit, sans-serif';
+      ctx.fillStyle = '#999';
+      ctx.fillText('负债占比', cx, cy + 14);
+      ctx.restore();
+    }
+  };
+
   loanPieChart = new Chart(ctx, {
     type: 'doughnut',
+    plugins: [loanCenterPlugin],
     data: {
       labels: ['正资产', '负债'],
       datasets: [{
