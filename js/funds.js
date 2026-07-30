@@ -92,7 +92,7 @@ function renderTotalCard() {
 
   const pnlEl = document.getElementById('monthPnl');
   if (prev > 0 || total > 0) {
-    pnlEl.textContent = (diff >= 0 ? '+' : '-') + fmtNum(Math.abs(diff)) + '    本月';
+    pnlEl.textContent = (diff >= 0 ? '+' + fmtNum(diff) : fmtNum(diff)) + '    本月';
     pnlEl.className = 'total-pnl';
     pnlEl.style.color = diff >= 0 ? '#ef4444' : '#22c55e';
   } else {
@@ -139,7 +139,7 @@ function renderAssetGrid() {
     let pnlClass = 'flat', pnlText = '本月 +0';
     if (prev > 0 || total > 0) {
       pnlClass = diff >= 0 ? 'up' : 'down';
-      pnlText = '本月 ' + (diff >= 0 ? '+' : '-') + fmtNum(Math.abs(diff));
+      pnlText = '本月 ' + (diff >= 0 ? '+' + fmtNum(diff) : fmtNum(diff));
     }
     return { ...s, total, pnlClass, pnlText, color: COLORS[i % COLORS.length], icon: s.icon || ICONS[i % ICONS.length], idx: i };
   });

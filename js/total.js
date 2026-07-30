@@ -102,7 +102,7 @@ function renderTotalCard() {
 
   const pnlEl = document.getElementById('totalPnl');
   if (prev > 0 || total > 0) {
-    pnlEl.textContent = (diff >= 0 ? '+' : '-') + fmtNum(Math.abs(diff)) + '    本月';
+    pnlEl.textContent = (diff >= 0 ? '+' + fmtNum(diff) : fmtNum(diff)) + '    本月';
     pnlEl.style.color = diff >= 0 ? '#ef4444' : '#22c55e';
   } else {
     pnlEl.textContent = '暂无数据';
@@ -273,7 +273,7 @@ function renderHistory() {
         let mom = '-';
         if (next) {
           const dv = d.total - next.total;
-          diff = (dv >= 0 ? '+' : '-') + fmtNum(dv);
+          diff = dv >= 0 ? '+' + fmtNum(dv) : fmtNum(dv);
           diffColor = dv >= 0 ? '#ef4444' : '#22c55e';
           mom = (next.total > 0 ? ((dv / next.total) * 100).toFixed(1) : '0.0') + '%';
           mom = (dv >= 0 ? '+' : '') + mom;
@@ -419,10 +419,9 @@ function renderDistType(container) {
     const arrow = diff > 0.1 ? '↑' : diff < -0.1 ? '↓' : '→';
     const color = diff > 0.1 ? '#ef4444' : diff < -0.1 ? '#22c55e' : '#9ca3af';
     const typeColor = TYPE_COLORS[tp];
-    const sign = diff >= 0 ? '+' : '-';
     return `<div class="cat-change">
       <div class="cat-change-name"><span class="cat-dot" style="background:${typeColor}"></span>${tp}</div>
-      <div class="cat-change-val" style="color:${color}">${sign}${fmtNum(Math.abs(diff))}</div>
+      <div class="cat-change-val" style="color:${color}">${diff >= 0 ? '+' + fmtNum(diff) : fmtNum(diff)}</div>
       <div class="cat-change-pct" style="color:${color}">${arrow}${pctChange}%</div>
     </div>`;
   }).join('');
@@ -583,7 +582,7 @@ function renderAssetBar(container) {
           <div class="bar-bg ${bgClass}" style="width:${barWidths[idx]}%"></div>
           <div class="bar-name"><i class="${item.icon}" style="margin-right:15px;opacity:0.6;"></i>${item.name}</div>
           <div class="bar-amount">¥${fmtNum(item.amount)}</div>
-          <div class="bar-pnl" style="color:${pnlColor}">${item.pnl >= 0 ? '+' : '-'}${fmtNum(item.pnl)}</div>
+          <div class="bar-pnl" style="color:${pnlColor}">${item.pnl >= 0 ? '+' + fmtNum(item.pnl) : fmtNum(item.pnl)}</div>
         </div>`;
       }).join('')}
     </div>
