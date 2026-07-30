@@ -100,13 +100,11 @@
       font-weight: 700;
     }
 
-    .total-loan {
-      display: inline;
-      font-size: 0.9rem;
+    .asset-card-sub {
+      font-size: 0.78rem;
       font-weight: 500;
-      color: rgba(255,255,255,0.8);
-      margin-left: 6px;
-      white-space: nowrap;
+      color: rgba(255,255,255,0.7);
+      margin-top: 4px;
     }
 
     .asset-card-pnl {
@@ -631,7 +629,8 @@
       <div class="asset-card-top">
         <div class="asset-card-info">
           <div class="asset-card-label">总资产 (CNY)</div>
-          <div class="asset-card-amount" id="totalAmount">¥0.00<span class="total-loan" id="totalLoan" style="display:none;"></span></div>
+          <div class="asset-card-amount" id="totalAmount">¥0.00</div>
+          <div class="asset-card-sub" id="totalSub"></div>
         </div>
         <div id="totalPnl" class="asset-card-pnl"></div>
       </div>

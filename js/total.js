@@ -100,8 +100,7 @@ function renderTotalCard() {
   const prev = getMonthTotal(getPrevMonth(currentMonth));
   const diff = total - prev;
 
-  const amountEl = document.getElementById('totalAmount');
-  amountEl.childNodes[0].textContent = '¥' + fmtNum(total);
+  document.getElementById('totalAmount').textContent = '¥' + fmtNum(total);
 
   const pnlEl = document.getElementById('totalPnl');
   if (prev > 0 || total > 0) {
@@ -127,12 +126,13 @@ function renderTotalCard() {
       loanTotal += Math.abs(getSourceAmount(s.id, currentMonth));
     }
   });
-  const loanEl = document.getElementById('totalLoan');
+  const subEl = document.getElementById('totalSub');
   if (loanTotal > 0) {
-    loanEl.textContent = '（负债：¥' + fmtNum(loanTotal) + '）';
-    loanEl.style.display = '';
+    const net = total - loanTotal;
+    subEl.textContent = '净资产：¥' + fmtNum(net) + '  |  负债：¥' + fmtNum(loanTotal);
+    subEl.style.display = '';
   } else {
-    loanEl.style.display = 'none';
+    subEl.style.display = 'none';
   }
 }
 
