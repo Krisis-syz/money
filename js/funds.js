@@ -576,7 +576,7 @@ function guessIcon(name) {
   if (n.includes('利息') || n.includes('收益') || n.includes('分红')) return 'fa-solid fa-coins';
   if (n.includes('社保') || n.includes('公积金')) return 'fa-solid fa-shield-halved';
   if (n.includes('定期') || n.includes('国债')) return 'fa-solid fa-piggy-bank';
-  if (n.includes('借') || n.includes('loan') || n.includes('花呗') || n.includes('白条')) return 'fa-solid fa-hand-holding-dollar';
+  if (n.includes('借') || n.includes('贷') || n.includes('loan') || n.includes('花呗') || n.includes('白条')) return 'fa-solid fa-hand-holding-dollar';
   if (n.includes('其他') || n.includes('other')) {
     const others = ['fa-solid fa-ellipsis', 'fa-solid fa-asterisk', 'fa-solid fa-folder', 'fa-solid fa-tag', 'fa-solid fa-bookmark', 'fa-solid fa-thumbtack'];
     return others[Math.floor(Math.random() * others.length)];
