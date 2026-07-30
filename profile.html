@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="js/theme.css">
   <script src="js/theme.js"></script>
   <script src="js/supabase.min.js"></script>
+  <script src="js/chart.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -242,6 +243,63 @@
     }
     .modal-close:active { background: #ede5f4; }
 
+    /* ========== 数据导出 ========== */
+    .export-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .export-tab {
+      flex: 1;
+      padding: 10px;
+      border: 1.5px solid rgba(148,111,178,0.2);
+      border-radius: 12px;
+      background: transparent;
+      color: #9ca3af;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .export-tab.active {
+      background: rgba(var(--primary-rgb), 0.1);
+      color: var(--accent);
+      border-color: var(--primary, #946FB2);
+      font-weight: 600;
+    }
+
+    .export-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .export-row:last-child { margin-bottom: 0; }
+
+    .export-row label {
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: #2d2d3a;
+      min-width: 36px;
+    }
+
+    .export-row select {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid rgba(148,111,178,0.2);
+      border-radius: 10px;
+      background: var(--card);
+      color: #2d2d3a;
+      font-size: 0.88rem;
+      font-family: inherit;
+      appearance: auto;
+    }
+    .export-row select:focus { outline: none; border-color: var(--primary); }
+
     /* ========== 主题选择 ========== */
     .theme-list {
       display: flex;
@@ -329,7 +387,7 @@
     .note-textarea:focus { outline: none; border-color: var(--primary); }
     .note-textarea::placeholder { color: #b0a4c4; }
 
-    .modal-btns { display: flex; gap: 10px; }
+    .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
 
     .modal-btn {
       flex: 1;
@@ -438,6 +496,13 @@
         <div class="menu-text">主题换肤</div>
         <div class="menu-arrow"><i class="fa-solid fa-chevron-right"></i></div>
       </div>
+      <div class="menu-item" onclick="showExportModal()">
+        <div class="menu-icon menu-icon-primary">
+          <i class="fa-solid fa-download"></i>
+        </div>
+        <div class="menu-text">数据导出</div>
+        <div class="menu-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+      </div>
       <div class="menu-item" onclick="handleLogout()">
         <div class="menu-icon" style="background:rgba(239,68,68,0.1);color:#ef4444;">
           <i class="fa-solid fa-right-from-bracket"></i>
@@ -447,7 +512,7 @@
       </div>
     </div>
 
-    <div class="version" onclick="showVersionModal()">Budget&nbsp;&nbsp;v1.2.2</div>
+    <div class="version" onclick="showVersionModal()">Budget&nbsp;&nbsp;v1.3.0</div>
   </div>
 
   <!-- 备注弹窗 -->
@@ -467,6 +532,18 @@
     <div class="modal-box">
       <div class="modal-title">版本历史</div>
       <ul class="version-list">
+        <li class="version-item">
+          <div class="version-head">
+            <span class="version-tag">v1.3.0</span>
+            <span class="version-date">2026-07-30</span>
+          </div>
+          <ul class="version-changes">
+            <li>新增数据导出功能（资产清单CSV/AI报告HTML）</li>
+            <li>CSV导出含收支、环比、占比列</li>
+            <li>AI报告导出支持图表内嵌渲染</li>
+            <li>导出主题色跟随系统主题</li>
+          </ul>
+        </li>
         <li class="version-item">
           <div class="version-head">
             <span class="version-tag">v1.2.2</span>
@@ -544,6 +621,37 @@
       <div class="modal-title">主题换肤</div>
       <div class="theme-list" id="themeList"></div>
       <button class="modal-close" onclick="hideThemeModal()">关闭</button>
+    </div>
+  </div>
+
+  <!-- 数据导出弹窗 -->
+  <div class="modal-overlay" id="exportModal">
+    <div class="modal-box">
+      <div class="modal-title">数据导出</div>
+      <div class="export-tabs">
+        <button class="export-tab active" onclick="setExportTab('asset')">资产清单</button>
+        <button class="export-tab" onclick="setExportTab('report')">AI报告</button>
+      </div>
+      <div id="exportAssetPanel">
+        <div class="export-row">
+          <label>起始</label>
+          <select id="exportStartMonth"></select>
+        </div>
+        <div class="export-row">
+          <label>结束</label>
+          <select id="exportEndMonth"></select>
+        </div>
+      </div>
+      <div id="exportReportPanel" style="display:none;">
+        <div class="export-row">
+          <label>月份</label>
+          <select id="exportReportMonth"></select>
+        </div>
+      </div>
+      <div class="modal-btns">
+        <button class="modal-btn modal-btn-cancel" onclick="hideExportModal()">取消</button>
+        <button class="modal-btn modal-btn-confirm" onclick="doExport()">导出</button>
+      </div>
     </div>
   </div>
 
@@ -660,6 +768,516 @@
       renderThemeList();
       // 刷新页面以应用所有颜色变化
       setTimeout(() => location.reload(), 200);
+    }
+
+    // ============ 数据导出 ============
+    let exportTab = 'asset';
+    let exportMonths = [];
+
+    // 简化版 Markdown 解析（复用 ai.js 的逻辑）
+    function simpleMarkdown(text) {
+      if (!text) return '';
+      text = text.replace(/(?:^|\n)(\|.+\|)\n(\|[-| :]+\|)\n((?:\|.+\|\n?)+)/g, function(match, headerRow, sepRow, bodyRows) {
+        const headers = headerRow.split('|').filter(c => c.trim()).map(c => c.trim());
+        const rows = bodyRows.trim().split('\n').map(row =>
+          row.split('|').filter(c => c.trim()).map(c => c.trim())
+        );
+        let html = '<table class="md-table"><thead><tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr></thead><tbody>';
+        rows.forEach(row => { html += '<tr>' + row.map(c => `<td>${c}</td>`).join('') + '</tr>'; });
+        html += '</tbody></table>';
+        return '\n' + html + '\n';
+      });
+      return text
+        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^## (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^# (.+)$/gm, '<h3>$1</h3>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/^- (.+)$/gm, '• $1')
+        .replace(/\n/g, '<br>')
+        .replace(/(<\/h3>)<br>/g, '$1')
+        .replace(/(<\/strong>)<br>/g, '$1')
+        .replace(/(<\/table>)<br>/g, '$1')
+        .replace(/<br>(<table)/g, '$1')
+        .replace(/<br>(<img)/g, '$1')
+        .replace(/(<img[^>]*\/?>)<br>/g, '$1');
+    }
+
+    // ============ 导出图表渲染 ============
+    let _exportSources = [];
+    let _exportAllRecords = [];
+
+    function _getMonthTotal(ym) {
+      let total = 0;
+      _exportAllRecords.forEach(r => {
+        if (r.yearMonth !== ym) return;
+        const src = _exportSources.find(s => s.id === r.sourceId);
+        if (src && src.type !== '借贷') total += r.amount;
+      });
+      return total;
+    }
+
+    function _getAmountForMonth(sourceId, ym) {
+      const r = _exportAllRecords.find(r => r.sourceId === sourceId && r.yearMonth === ym);
+      return r ? r.amount : 0;
+    }
+
+    function _fmtNum(n) {
+      return Number(n).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    async function renderExportChart(type, param) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 600;
+      canvas.height = 300;
+      const now = new Date();
+      const theme = getThemeColors();
+
+      if (type === 'trend') {
+        const labels = [], data = [];
+        for (let i = 11; i >= 0; i--) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          labels.push(`${d.getMonth() + 1}月`);
+          data.push(param ? _getAmountForMonth(param, ym) : _getMonthTotal(ym));
+        }
+        new Chart(canvas, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              data,
+              borderColor: theme.primary,
+              backgroundColor: `rgba(${hexToRgb(theme.primary)},0.1)`,
+              fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: theme.primary
+            }]
+          },
+          options: {
+            responsive: false, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { display: false }, ticks: { color: '#9ca3af', font: { size: 10 } } },
+              y: { beginAtZero: false, border: { display: false }, grid: { color: 'rgba(148,111,178,0.06)' },
+                ticks: { callback: v => '¥' + _fmtNum(v), color: '#9ca3af', font: { size: 10 } } }
+            }
+          }
+        });
+      } else if (type === 'pie') {
+        const typeMap = { '流动': 0, '基金': 0, '股票': 0 };
+        const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        _exportSources.forEach(s => {
+          const amt = _getAmountForMonth(s.id, ym);
+          const t = s.type || '流动';
+          if (typeMap[t] !== undefined) typeMap[t] += amt;
+          else typeMap['流动'] += amt;
+        });
+        const labels = Object.keys(typeMap);
+        const data = Object.values(typeMap);
+        const colors = [theme.流动, theme.基金, theme.股票];
+        const total = data.reduce((a, b) => a + b, 0);
+
+        const centerPlugin = {
+          id: 'centerLabel',
+          afterDraw(chart) {
+            const { ctx, width, height } = chart;
+            ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.font = 'bold 14px Outfit'; ctx.fillStyle = '#2d2d3a';
+            ctx.fillText('¥' + _fmtNum(total), width / 2, height / 2 - 8);
+            ctx.font = '11px Outfit'; ctx.fillStyle = '#9ca3af';
+            ctx.fillText('总资产', width / 2, height / 2 + 12);
+            ctx.restore();
+          }
+        };
+
+        new Chart(canvas, {
+          type: 'doughnut',
+          data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0 }] },
+          plugins: [centerPlugin],
+          options: {
+            responsive: false, maintainAspectRatio: false, cutout: '55%',
+            layout: { padding: { top: 10, bottom: 5 } },
+            plugins: {
+              legend: { display: true, position: 'bottom',
+                labels: { boxWidth: 10, boxHeight: 10, padding: 12, font: { size: 11 }, color: '#2d2d3a', usePointStyle: true, pointStyle: 'circle' } }
+            }
+          }
+        });
+      } else if (type === 'bar') {
+        const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const items = _exportSources
+          .map((s, i) => ({ name: s.name, amount: _getAmountForMonth(s.id, ym), color: theme.chart[i % theme.chart.length] }))
+          .filter(i => i.amount > 0)
+          .sort((a, b) => b.amount - a.amount);
+        if (items.length === 0) return null;
+
+        new Chart(canvas, {
+          type: 'bar',
+          data: {
+            labels: items.map(i => i.name),
+            datasets: [{ data: items.map(i => i.amount),
+              backgroundColor: items.map(i => i.color + 'B3'), borderColor: items.map(i => i.color),
+              borderWidth: 1, borderRadius: 6 }]
+          },
+          options: {
+            responsive: false, maintainAspectRatio: false, indexAxis: 'y',
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { color: 'rgba(148,111,178,0.06)' },
+                ticks: { callback: v => '¥' + _fmtNum(v), color: '#9ca3af', font: { size: 10 } } },
+              y: { grid: { display: false }, ticks: { color: '#2d2d3a', font: { size: 11 } } }
+            }
+          }
+        });
+      }
+
+      return canvas.toDataURL('image/png');
+    }
+
+    async function showExportModal() {
+      document.getElementById('exportModal').classList.add('show');
+      exportTab = 'asset';
+      setExportTabUI();
+      try {
+        const records = await fundApi.getAllRecords();
+        const monthSet = new Set(records.map(r => r.yearMonth));
+        exportMonths = [...monthSet].sort().reverse();
+        renderMonthSelects();
+      } catch (e) {
+        exportMonths = [];
+        renderMonthSelects();
+      }
+    }
+
+    function hideExportModal() {
+      document.getElementById('exportModal').classList.remove('show');
+    }
+
+    document.getElementById('exportModal').addEventListener('click', e => {
+      if (e.target === e.currentTarget) hideExportModal();
+    });
+
+    function setExportTab(tab) {
+      exportTab = tab;
+      setExportTabUI();
+    }
+
+    function setExportTabUI() {
+      document.querySelectorAll('.export-tab').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.includes(exportTab === 'asset' ? '资产' : 'AI'));
+      });
+      document.getElementById('exportAssetPanel').style.display = exportTab === 'asset' ? '' : 'none';
+      document.getElementById('exportReportPanel').style.display = exportTab === 'report' ? '' : 'none';
+    }
+
+    function renderMonthSelects() {
+      const options = exportMonths.length > 0
+        ? exportMonths.map(m => `<option value="${m}">${m.slice(0,4)}年${m.slice(5)}月</option>`).join('')
+        : '<option value="">暂无数据</option>';
+      document.getElementById('exportStartMonth').innerHTML = options;
+      document.getElementById('exportEndMonth').innerHTML = options;
+      document.getElementById('exportReportMonth').innerHTML = options;
+    }
+
+    async function doExport() {
+      if (exportTab === 'asset') {
+        await exportAssetCSV();
+      } else {
+        await exportReportHTML();
+      }
+    }
+
+    async function exportAssetCSV() {
+      const start = document.getElementById('exportStartMonth').value;
+      const end = document.getElementById('exportEndMonth').value;
+      if (!start || !end) { showToast('请选择月份范围', true); return; }
+      if (start > end) { showToast('起始月份不能晚于结束月份', true); return; }
+
+      const allRecords = await fundApi.getAllRecords();
+      const sources = await fundApi.getSources();
+      const sourceMap = {};
+      sources.forEach(s => { sourceMap[s.id] = s; });
+
+      const filtered = allRecords.filter(r => r.yearMonth >= start && r.yearMonth <= end);
+      if (filtered.length === 0) { showToast('该范围暂无数据', true); return; }
+
+      // 按月份分组
+      const monthMap = {};
+      filtered.forEach(r => {
+        if (!monthMap[r.yearMonth]) monthMap[r.yearMonth] = [];
+        monthMap[r.yearMonth].push(r);
+      });
+
+      // 按 (sourceId, yearMonth) 索引
+      const recordIndex = {};
+      filtered.forEach(r => {
+        recordIndex[r.sourceId + '|' + r.yearMonth] = r;
+      });
+
+      const months = Object.keys(monthMap).sort();
+
+      // 计算每月总资产（排除借贷）
+      const monthTotals = {};
+      months.forEach(m => {
+        let total = 0;
+        monthMap[m].forEach(r => {
+          const src = sourceMap[r.sourceId];
+          if (src && src.type !== '借贷') total += r.amount;
+        });
+        monthTotals[m] = total;
+      });
+
+      let csv = '﻿月份,资产名称,资产类型,金额,收支,环比,占比\n';
+      months.forEach(m => {
+        monthMap[m].forEach(r => {
+          const src = sourceMap[r.sourceId] || {};
+          const type = src.type || '';
+
+          // 找上一个月
+          const idx = months.indexOf(m);
+          const prevMonth = idx > 0 ? months[idx - 1] : null;
+          const prevRecord = prevMonth ? recordIndex[r.sourceId + '|' + prevMonth] : null;
+          const prevAmount = prevRecord ? prevRecord.amount : 0;
+
+          // 收支
+          const pnl = r.amount - prevAmount;
+
+          // 环比
+          let mom = '';
+          if (prevAmount !== 0) {
+            mom = ((r.amount - prevAmount) / Math.abs(prevAmount) * 100).toFixed(1) + '%';
+          } else if (r.amount !== 0) {
+            mom = '新增';
+          }
+
+          // 占比
+          const total = monthTotals[m];
+          let pct = '';
+          if (total > 0) {
+            const base = type === '借贷' ? Math.abs(r.amount) : r.amount;
+            pct = (base / total * 100).toFixed(1) + '%';
+          }
+
+          csv += `${m},"${r.sourceName}",${type},${r.amount},${pnl},${mom},${pct}\n`;
+        });
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `资产清单_${start}_${end}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      hideExportModal();
+      showToast('导出成功');
+    }
+
+    async function exportReportHTML() {
+      const month = document.getElementById('exportReportMonth').value;
+      if (!month) { showToast('请选择月份', true); return; }
+
+      const report = await fundApi.getReport(month);
+      if (!report || !report.report_text) { showToast('该月份暂无报告', true); return; }
+
+      // 加载数据用于图表渲染
+      _exportSources = await fundApi.getSources();
+      _exportAllRecords = await fundApi.getAllRecords();
+
+      // 解析图表标记
+      const chartRegex = /\[chart:(\w+)(?::([^\]]+))?\]/g;
+      const chartPlaceholders = [];
+      let match;
+      while ((match = chartRegex.exec(report.report_text)) !== null) {
+        chartPlaceholders.push({ full: match[0], type: match[1], param: match[2] || null });
+      }
+
+      // 替换图表标记为 canvas 占位符
+      let chartIndex = 0;
+      let reportText = report.report_text;
+      for (const cp of chartPlaceholders) {
+        const canvasId = `export-chart-${chartIndex++}`;
+        reportText = reportText.replace(cp.full, `<div style="margin:12px 0;"><canvas id="${canvasId}" style="width:100%;max-height:220px;"></canvas></div>`);
+      }
+
+      let html = simpleMarkdown(reportText);
+      const theme = getThemeColors();
+      const themeRgb = hexToRgb(theme.primary);
+
+      // 构建图表配置 JSON
+      const chartConfigs = chartPlaceholders.map((cp, i) => ({
+        id: `export-chart-${i}`,
+        type: cp.type,
+        param: cp.param
+      }));
+
+      // 构建数据 JSON
+      const sourcesJson = JSON.stringify(_exportSources.map(s => ({ id: s.id, name: s.name, type: s.type })));
+      const now = new Date();
+      const monthKeys = [];
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        monthKeys.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+      }
+      // 收集这些月份的记录
+      const exportRecords = _exportAllRecords.filter(r => monthKeys.includes(r.yearMonth));
+      const recordsJson = JSON.stringify(exportRecords.map(r => ({ sid: r.sourceId, ym: r.yearMonth, amt: r.amount })));
+
+      const page = `<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI资产报告 - ${month}</title>
+<style>body{font-family:'Outfit',-apple-system,BlinkMacSystemFont,sans-serif;max-width:600px;margin:0 auto;padding:24px 16px;background:${theme.bg};color:#2d2d3a;line-height:1.7;}
+h1{font-size:1.2rem;color:${theme.accent};margin-bottom:20px;}
+h3{font-size:1rem;color:${theme.accent};margin:16px 0 8px;}
+p{margin-bottom:8px;}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:0.85rem;}
+th{background:rgba(${themeRgb},0.08);padding:8px 10px;text-align:left;font-weight:600;color:${theme.accent};border-bottom:2px solid rgba(${themeRgb},0.15);}
+td{padding:7px 10px;border-bottom:1px solid rgba(${themeRgb},0.08);}
+tr:last-child td{border-bottom:none;}
+.footer{margin-top:40px;text-align:center;font-size:0.75rem;color:#b0a4c4;}
+.chart-box{background:#fff;border-radius:12px;padding:12px;margin:12px 0;}</style></head>
+<body><h1>AI资产报告 — ${month}</h1>${html}<div class="footer">导出自 Budget</div>
+<script>
+var S=${sourcesJson},R=${recordsJson},C=${JSON.stringify(chartConfigs)};
+var T={p:'${theme.primary}',d:'${theme.accent}',l:'${theme.流动}',f:'${theme.基金}',g:'${theme.股票}',ch:${JSON.stringify(theme.chart)}};
+function ga(s,y){var r=R.find(function(x){return x.sid===s&&x.ym===y});return r?r.amt:0;}
+function gt(y){var t=0;S.forEach(function(s){if(s.type==='借贷')return;t+=ga(s.id,y);});return t;}
+function fn(n){return(n<0?'-':'')+Math.abs(n).toFixed(2).replace(/\\B(?=(\\d{3})+(?!\\d))/g,',');}
+function h2r(h){return[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];}
+function drawTrend(cv,data,labels,color){
+var ctx=cv.getContext('2d'),w=cv.width,h=cv.height,pad={t:20,r:10,b:30,l:60};
+var cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;
+var mn=Math.min.apply(null,data),mx=Math.max.apply(null,data);
+if(mn===mx){mn-=100;mx+=100;}
+var range=mx-mn||1;
+ctx.strokeStyle='#eee';ctx.lineWidth=1;
+for(var i=0;i<=4;i++){
+var y=pad.t+ch-ch*(i/4);
+ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();
+ctx.fillStyle='#9ca3af';ctx.font='10px sans-serif';ctx.textAlign='right';
+ctx.fillText('¥'+fn(mn+range*(i/4)),pad.l-5,y+3);
+}
+ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();
+data.forEach(function(v,i){
+var x=pad.l+cw*(i/(data.length-1||1));
+var y=pad.t+ch-ch*((v-mn)/range);
+i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+});
+ctx.stroke();
+var rgb=h2r(color);
+ctx.fillStyle='rgba('+rgb.join(',')+',0.1)';ctx.beginPath();
+data.forEach(function(v,i){
+var x=pad.l+cw*(i/(data.length-1||1));
+var y=pad.t+ch-ch*((v-mn)/range);
+i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+});
+ctx.lineTo(pad.l+cw,pad.t+ch);ctx.lineTo(pad.l,pad.t+ch);ctx.closePath();ctx.fill();
+data.forEach(function(v,i){
+var x=pad.l+cw*(i/(data.length-1||1));
+var y=pad.t+ch-ch*((v-mn)/range);
+ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
+});
+ctx.fillStyle='#9ca3af';ctx.font='10px sans-serif';ctx.textAlign='center';
+labels.forEach(function(l,i){
+var x=pad.l+cw*(i/(labels.length-1||1));
+ctx.fillText(l,x,h-8);
+});
+}
+function drawPie(cv,data,labels,colors,total){
+var ctx=cv.getContext('2d'),w=cv.width,h=cv.height;
+var cy=h/2-20,r=Math.min(w/2-20,h/2-40);
+var cx=w/2;
+var start=-Math.PI/2;
+data.forEach(function(v,i){
+if(v<=0)return;
+var slice=Math.PI*2*(v/total);
+ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,start,start+slice);ctx.closePath();
+ctx.fillStyle=colors[i];ctx.fill();
+start+=slice;
+});
+var ir=r*0.55;
+ctx.beginPath();ctx.arc(cx,cy,ir,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+ctx.fillStyle='#2d2d3a';ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+ctx.fillText('¥'+fn(total),cx,cy-8);
+ctx.fillStyle='#9ca3af';ctx.font='11px sans-serif';ctx.fillText('总资产',cx,cy+12);
+var ly=h-15;
+ctx.font='11px sans-serif';
+var totalW=0;var lw=[];
+labels.forEach(function(l,i){lw.push(ctx.measureText(l).width+20);totalW+=lw[i];});
+var lx=(w-totalW)/2;
+labels.forEach(function(l,i){
+if(data[i]<=0)return;
+ctx.fillStyle=colors[i];ctx.beginPath();ctx.arc(lx+5,ly,5,0,Math.PI*2);ctx.fill();
+ctx.fillStyle='#2d2d3a';ctx.textAlign='left';ctx.fillText(l,lx+14,ly+4);
+lx+=lw[i];
+});
+}
+function drawBar(cv,items){
+var ctx=cv.getContext('2d'),w=cv.width,h=cv.height;
+var pad={t:10,r:10,b:10,l:80};
+var cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;
+var mx=Math.max.apply(null,items.map(function(i){return i.amount;}))||1;
+var bh=Math.min(30,ch/items.length-6);
+items.forEach(function(item,i){
+var y=pad.t+i*(ch/items.length)+(ch/items.length-bh)/2;
+var bw=cw*(item.amount/mx);
+ctx.fillStyle=item.color+'40';
+ctx.fillRect(pad.l,y,cw,bh);
+ctx.fillStyle=item.color;
+ctx.fillRect(pad.l,y,bw,bh);
+ctx.fillStyle='#2d2d3a';ctx.font='11px sans-serif';ctx.textAlign='right';ctx.textBaseline='middle';
+ctx.fillText(item.name,pad.l-8,y+bh/2);
+ctx.fillStyle='#666';ctx.textAlign='left';ctx.fillText('¥'+fn(item.amount),pad.l+bw+6,y+bh/2);
+});
+}
+document.addEventListener('DOMContentLoaded',function(){
+var now=new Date(),labels=[],mk=[];
+for(var i=11;i>=0;i--){var d=new Date(now.getFullYear(),now.getMonth()-i,1);labels.push((d.getMonth()+1)+'月');mk.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));}
+C.forEach(function(c){
+var cv=document.getElementById(c.id);if(!cv)return;
+var box=cv.parentElement;box.className='chart-box';
+var W=box.clientWidth-24;
+var H=c.type==='pie'?250:200;
+cv.width=W;cv.height=H;
+cv.style.width=W+'px';cv.style.height=H+'px';
+if(c.type==='trend'){
+var data=mk.map(function(y){return c.param?ga(c.param,y):gt(y);});
+drawTrend(cv,data,labels,T.p);
+}else if(c.type==='pie'){
+var tm={'流动':0,'基金':0,'股票':0};
+var ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+S.forEach(function(s){var a=ga(s.id,ym);var t=s.type||'流动';if(tm[t]!==undefined)tm[t]+=a;else tm['流动']+=a;});
+var lb=Object.keys(tm),dt=Object.values(tm),cl=[T.l,T.f,T.g],total=dt.reduce(function(a,b){return a+b;},0);
+drawPie(cv,dt,lb,cl,total);
+}else if(c.type==='bar'){
+var ym2=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+var items=S.map(function(s,i){return{name:s.name,amount:ga(s.id,ym2),color:T.ch[i%T.ch.length]};}).filter(function(i){return i.amount>0;}).sort(function(a,b){return b.amount-a.amount;});
+if(items.length>0){
+cv.height=Math.max(200,items.length*44+20);
+cv.style.height=cv.height+'px';
+drawBar(cv,items);
+}
+}
+});
+});
+<\/script></body></html>`;
+
+      const blob = new Blob([page], { type: 'text/html;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `AI报告_${month}.html`;
+      a.click();
+      URL.revokeObjectURL(url);
+      hideExportModal();
+      showToast('导出成功');
+    }
+
+    function showToast(msg, isError) {
+      const toast = document.createElement('div');
+      toast.className = 'save-toast';
+      if (isError) toast.style.background = 'rgba(239,68,68,0.95)';
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 1500);
     }
   </script>
 </body>
