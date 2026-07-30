@@ -100,7 +100,8 @@ function renderTotalCard() {
   const prev = getMonthTotal(getPrevMonth(currentMonth));
   const diff = total - prev;
 
-  document.getElementById('totalAmount').textContent = '¥' + fmtNum(total);
+  const amountEl = document.getElementById('totalAmount');
+  amountEl.childNodes[0].textContent = '¥' + fmtNum(total);
 
   const pnlEl = document.getElementById('totalPnl');
   if (prev > 0 || total > 0) {
@@ -119,6 +120,20 @@ function renderTotalCard() {
     const pct = total > 0 ? ((amt / total) * 100).toFixed(1) : '0.0';
     return `<div class="asset-tag"><span style="color:${TYPE_COLORS[name]}">●</span> ${name} <span class="asset-tag-val">${pct}%</span></div>`;
   }).join('');
+
+  let loanTotal = 0;
+  allSources.forEach(s => {
+    if (s.type === '借贷') {
+      loanTotal += Math.abs(getSourceAmount(s.id, currentMonth));
+    }
+  });
+  const loanEl = document.getElementById('totalLoan');
+  if (loanTotal > 0) {
+    loanEl.textContent = '（负债：¥' + fmtNum(loanTotal) + '）';
+    loanEl.style.display = '';
+  } else {
+    loanEl.style.display = 'none';
+  }
 }
 
 // ============ 趋势图 ============
