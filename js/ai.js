@@ -40,7 +40,10 @@ function getAmountForMonth(sourceId, ym) {
 
 function getMonthTotal(ym) {
   let total = 0;
-  allSources.forEach(s => { total += getAmountForMonth(s.id, ym); });
+  allSources.forEach(s => {
+    if (s.type === '借贷') return;
+    total += getAmountForMonth(s.id, ym);
+  });
   return total;
 }
 
@@ -623,14 +626,24 @@ function buildAIPrompt(userInput) {
     return null;
   }).filter(Boolean).join('\n') || '无';
 
+  // 负债数据
+  const curLoan = allSources.filter(s => s.type === '借贷').reduce((s, src) => s + Math.abs(getAmountForMonth(src.id, reportMonth)), 0);
+  const prevLoan = allSources.filter(s => s.type === '借贷').reduce((s, src) => s + Math.abs(getAmountForMonth(src.id, getPrevMonth(reportMonth))), 0);
+  const curNet = curTotal - curLoan;
+  const prevNet = prevTotal - prevLoan;
+
   const prompt = `# 角色
 你是专业的个人资产分析师，输出风格极简、精准、落地、生活化，不堆砌金融术语，专为个人月度资产复盘生成报告。
 
 # 输入变量
 - 统计月份：${reportMonth}
-- 本月总资产：¥${fmtNum(curTotal)}
-- 上月总资产：¥${fmtNum(prevTotal)}
-- 近12个月总资产：
+- 本月正资产：¥${fmtNum(curTotal)}
+- 上月正资产：¥${fmtNum(prevTotal)}
+- 本月负债：¥${fmtNum(curLoan)}
+- 上月负债：¥${fmtNum(prevLoan)}
+- 本月净资产：¥${fmtNum(curNet)}
+- 上月净资产：¥${fmtNum(prevNet)}
+- 近12个月正资产：
 ${monthlyTotals.map(t => '  ' + t).join('\n')}
 - 环比变动：${diffPct}%
 - 资产分类数据（类别+金额+占比，含上月数据及对比）：
@@ -639,6 +652,11 @@ ${categories}
 ${assets}
 - 用户月度补充说明：
 ${userInputText}
+
+# 负债说明
+- 类型为"借贷"的资产是负债，金额为负数，不计入正资产
+- 分析时应关注净资产（正资产-负债）的变化趋势
+- 负债类资产包括：花呗、借呗、信用卡欠款、贷款等
 
 # 强制输出规范
 1. 全文使用标准 Markdown，所有章节使用 ## 二级标题。
