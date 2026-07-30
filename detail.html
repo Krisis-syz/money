@@ -387,7 +387,8 @@
 
       const diff = total - prev;
       const mom = prev > 0 ? ((diff / prev) * 100).toFixed(1) : '0.0';
-      const pct = allTotal > 0 ? ((total / allTotal) * 100).toFixed(1) : '0.0';
+      const pctValue = source.type === '借贷' ? Math.abs(total) : total;
+      const pct = allTotal > 0 ? ((pctValue / allTotal) * 100).toFixed(1) : '0.0';
 
       const diffColor = diff >= 0 ? '#ef4444' : '#22c55e';
 
@@ -555,7 +556,10 @@
 
     function getMonthTotal(ym) {
       let total = 0;
-      allSources.forEach(s => { total += getAmountForMonth(s.id, ym); });
+      allSources.forEach(s => {
+        if (s.type === '借贷') return;
+        total += getAmountForMonth(s.id, ym);
+      });
       return total;
     }
 

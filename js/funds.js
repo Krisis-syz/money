@@ -84,8 +84,8 @@ function renderAssets() {
 }
 
 function renderTotalCard() {
-  const total = getMonthTotal(currentMonth);
-  const prev = getMonthTotal(getPrevMonth(currentMonth));
+  const total = getMonthTotal(currentMonth, true);
+  const prev = getMonthTotal(getPrevMonth(currentMonth), true);
   const diff = total - prev;
 
   document.getElementById('totalAmount').textContent = '¥' + fmtNum(total);
@@ -101,7 +101,7 @@ function renderTotalCard() {
     pnlEl.style.color = '';
   }
 
-  // 资产大类标签
+  // 资产大类标签（排除借贷）
   const tagsEl = document.getElementById('totalTags');
   if (allSources.length === 0) {
     tagsEl.innerHTML = '';
@@ -112,6 +112,7 @@ function renderTotalCard() {
   const themeColors = getThemeColors();
   const typeColors = { '流动': themeColors.流动, '基金': themeColors.基金, '股票': themeColors.股票 };
   allSources.forEach(s => {
+    if (s.type === '借贷') return;
     const amt = getAmountForMonth(s.id, currentMonth);
     const t = s.type || '流动';
     if (typeMap[t] !== undefined) typeMap[t] += amt;
@@ -122,6 +123,21 @@ function renderTotalCard() {
     const pct = total > 0 ? ((amt / total) * 100).toFixed(1) : '0.0';
     return `<div class="total-tag"><span class="total-tag-dot" style="background:${typeColors[name]}"></span>${name} ${pct}%</div>`;
   }).join('');
+
+  // 借贷总额
+  let loanTotal = 0;
+  allSources.forEach(s => {
+    if (s.type === '借贷') {
+      loanTotal += Math.abs(getAmountForMonth(s.id, currentMonth));
+    }
+  });
+  const loanEl = document.getElementById('totalLoan');
+  if (loanTotal > 0) {
+    loanEl.textContent = ' / 借贷：¥' + fmtNum(loanTotal);
+    loanEl.style.display = '';
+  } else {
+    loanEl.style.display = 'none';
+  }
 }
 
 function renderAssetGrid() {
@@ -389,6 +405,19 @@ async function saveMonthRecords() {
     return;
   }
 
+  // 借贷类资产必须为负数
+  for (const inp of inputs) {
+    const sourceId = inp.dataset.id;
+    const source = allSources.find(s => s.id === sourceId);
+    if (source && source.type === '借贷') {
+      const val = parseFloat(inp.value);
+      if (!isNaN(val) && val > 0) {
+        alert('借贷类资产的金额必须为负数');
+        return;
+      }
+    }
+  }
+
   pendingRecords = records;
   document.getElementById('confirmText').textContent = userNote || '确认保存本月记录？';
   document.getElementById('confirmModal').classList.add('show');
@@ -502,9 +531,12 @@ function getPrevMonth(ym) {
   return m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, '0')}`;
 }
 
-function getMonthTotal(ym) {
+function getMonthTotal(ym, excludeLoan) {
   let total = 0;
-  allSources.forEach(s => { total += getAmountForMonth(s.id, ym); });
+  allSources.forEach(s => {
+    if (excludeLoan && s.type === '借贷') return;
+    total += getAmountForMonth(s.id, ym);
+  });
   return total;
 }
 
@@ -543,6 +575,7 @@ function guessIcon(name) {
   if (n.includes('利息') || n.includes('收益') || n.includes('分红')) return 'fa-solid fa-coins';
   if (n.includes('社保') || n.includes('公积金')) return 'fa-solid fa-shield-halved';
   if (n.includes('定期') || n.includes('国债')) return 'fa-solid fa-piggy-bank';
+  if (n.includes('借') || n.includes('loan') || n.includes('花呗') || n.includes('白条')) return 'fa-solid fa-hand-holding-dollar';
   if (n.includes('其他') || n.includes('other')) {
     const others = ['fa-solid fa-ellipsis', 'fa-solid fa-asterisk', 'fa-solid fa-folder', 'fa-solid fa-tag', 'fa-solid fa-bookmark', 'fa-solid fa-thumbtack'];
     return others[Math.floor(Math.random() * others.length)];

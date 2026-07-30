@@ -60,6 +60,7 @@ function hexToRgb(hex) {
 function getMonthTotal(ym) {
   let total = 0;
   allSources.forEach(s => {
+    if (s.type === '借贷') return;
     const records = allRecords.filter(r => r.sourceId === s.id && r.yearMonth === ym);
     if (records.length > 0) total += records[records.length - 1].amount;
   });
@@ -69,6 +70,7 @@ function getMonthTotal(ym) {
 function getTypeTotals(ym) {
   const totals = { '流动': 0, '基金': 0, '股票': 0 };
   allSources.forEach(s => {
+    if (s.type === '借贷') return;
     const records = allRecords.filter(r => r.sourceId === s.id && r.yearMonth === ym);
     const amt = records.length > 0 ? records[records.length - 1].amount : 0;
     const t = s.type || '流动';
@@ -430,7 +432,7 @@ function renderDistType(container) {
 function renderDistAsset(container) {
   const COLORS = getThemeColors().chart;
 
-  const items = allSources.map((s, i) => ({
+  const items = allSources.filter(s => s.type !== '借贷').map((s, i) => ({
     name: s.name,
     amount: getSourceAmount(s.id, categoryMonth),
     color: COLORS[i % COLORS.length]
@@ -528,7 +530,7 @@ function renderAssetViz() {
 }
 
 function renderAssetBar(container) {
-  const items = allSources.map(s => {
+  const items = allSources.filter(s => s.type !== '借贷').map(s => {
     const amount = getSourceAmount(s.id, assetMonth);
     const prevAmount = getSourceAmount(s.id, getPrevMonth(assetMonth));
     const pnl = amount - prevAmount;

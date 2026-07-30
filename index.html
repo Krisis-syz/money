@@ -122,6 +122,14 @@
       border-radius: 50%;
     }
 
+    .total-loan {
+      margin-top: 8px;
+      font-size: 0.68rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.65);
+      font-style: italic;
+    }
+
     /* ========== 标题行 ========== */
     .section-header {
       display: flex;
@@ -700,6 +708,7 @@
       </div>
       <div class="total-amount" id="totalAmount">¥0.00</div>
       <div class="total-tags" id="totalTags"></div>
+      <div class="total-loan" id="totalLoan" style="display:none;"></div>
     </div>
 
     <!-- 标题行 -->
@@ -733,6 +742,7 @@
         <option value="流动">流动</option>
         <option value="基金">基金</option>
         <option value="股票">股票</option>
+        <option value="借贷">借贷</option>
       </select>
       <div class="modal-btns">
         <button class="modal-btn modal-btn-cancel" onclick="hideAddModal()">取消</button>
@@ -760,6 +770,7 @@
         <option value="流动">流动</option>
         <option value="基金">基金</option>
         <option value="股票">股票</option>
+        <option value="借贷">借贷</option>
       </select>
       <div class="modal-btns">
         <button class="modal-btn modal-btn-cancel" onclick="hideEditModal()">取消</button>
