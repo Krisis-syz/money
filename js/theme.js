@@ -32,21 +32,9 @@ const THEMES = {
     primary: '#8B7355',
     accent: '#6B5340',
     流动: '#D4A574',
-    基金: '#A0826D',
-    股票: '#C9956B',
-    chart: ['#8B7355', '#A0826D', '#C9956B', '#D4A574', '#B8956A', '#96725F', '#C4A484', '#DFC4A8']
-  },
-  green: {
-    name: '浅草绿',
-    desc: '草绿色主题，生机盎然',
-    bg: '#E8F5E9',
-    card: '#F1F8F2',
-    primary: '#4CAF50',
-    accent: '#2E7D32',
-    流动: '#66BB6A',
-    基金: '#42A5F5',
-    股票: '#FF7043',
-    chart: ['#4CAF50', '#42A5F5', '#FF7043', '#AB47BC', '#FFA726', '#26C6DA', '#EF5350', '#8D6E63']
+    基金: '#7BA3A0',
+    股票: '#C75B3A',
+    chart: ['#8B7355', '#7BA3A0', '#C75B3A', '#D4A574', '#9E8B6E', '#5E8C7A', '#B87D5A', '#A0826D']
   },
   pink: {
     name: '樱花粉',
@@ -59,6 +47,18 @@ const THEMES = {
     基金: '#A78BFA',
     股票: '#60A5FA',
     chart: ['#EC4899', '#A78BFA', '#60A5FA', '#34D399', '#FBBF24', '#F87171', '#818CF8', '#2DD4BF']
+  },
+  cream: {
+    name: '奶油色',
+    desc: '米白色主题，温暖柔和',
+    bg: '#FCF8F2',
+    card: '#FFFEFA',
+    primary: '#D4A87A',
+    accent: '#B08A60',
+    流动: '#E0C4A0',
+    基金: '#9CC5D4',
+    股票: '#E0A89E',
+    chart: ['#D4A87A', '#9CC5D4', '#E0A89E', '#B8A880', '#A8C8B8', '#D4B890', '#B0C8A0', '#D0B8A0']
   }
 };
 
@@ -66,6 +66,13 @@ const THEMES = {
 let currentTheme = localStorage.getItem('budgetTheme') || 'purple';
 
 // ============ 应用主题 ============
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `${r},${g},${b}`;
+}
+
 function applyTheme(themeKey) {
   const theme = THEMES[themeKey];
   if (!theme) return;
@@ -74,6 +81,7 @@ function applyTheme(themeKey) {
   root.style.setProperty('--bg', theme.bg);
   root.style.setProperty('--card', theme.card);
   root.style.setProperty('--primary', theme.primary);
+  root.style.setProperty('--primary-rgb', hexToRgb(theme.primary));
   root.style.setProperty('--accent', theme.accent);
   root.style.setProperty('--流动', theme.流动);
   root.style.setProperty('--基金', theme.基金);

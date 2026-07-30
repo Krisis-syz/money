@@ -54,14 +54,14 @@
     .total-card {
       position: relative;
       z-index: 1;
-      background: rgba(168, 124, 197, 0.65);
+      background: rgba(var(--primary-rgb), 0.65);
       border: 1.5px solid rgba(255,255,255,0.3);
       border-radius: 24px;
       padding: 24px 22px 20px;
       margin-top: 60px;
       margin-bottom: 24px;
       color: #fff;
-      box-shadow: 0 0 20px rgba(255,255,255,0.1), 0 4px 20px rgba(148,111,178,0.2);
+      box-shadow: 0 0 20px rgba(255,255,255,0.1), 0 4px 20px rgba(var(--primary-rgb),0.2);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
     }
@@ -512,7 +512,7 @@
       width: 36px;
       height: 36px;
       border-radius: 50%;
-      background: rgba(148,111,178,0.1);
+      background: rgba(var(--primary-rgb),0.1);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -552,7 +552,7 @@
       white-space: nowrap;
       flex-shrink: 0;
     }
-    .record-status.filled { background: rgba(148,111,178,0.12); color: var(--primary); }
+    .record-status.filled { background: rgba(var(--primary-rgb),0.12); color: var(--primary); }
     .record-status.empty { background: rgba(239,68,68,0.1); color: #ef4444; }
 
     .save-record-btn {
@@ -617,7 +617,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: #f8f4fc;
+      background: var(--card);
       border-radius: 16px 16px 0 0;
       padding: 10px 8px calc(10px + env(safe-area-inset-bottom, 0px));
       z-index: 2000;
@@ -664,16 +664,16 @@
       transition: background 0.15s;
       box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
-    .num-key:active { background: #ede5f4; }
+    .num-key:active { background: rgba(var(--primary-rgb),0.12); }
 
     .num-key.fn {
-      background: #ede5f4;
+      background: rgba(var(--primary-rgb),0.12);
       color: var(--accent);
       font-size: 0.85rem;
       font-weight: 600;
       font-family: 'Outfit', sans-serif;
     }
-    .num-key.fn:active { background: #ddd0ea; }
+    .num-key.fn:active { background: rgba(var(--primary-rgb),0.2); }
 
     .num-key.confirm {
       background: var(--primary);
@@ -682,7 +682,7 @@
       font-weight: 600;
       font-family: 'Outfit', sans-serif;
     }
-    .num-key.confirm:active { background: #7d5a9e; }
+    .num-key.confirm:active { background: var(--accent); }
 
     .num-key.long {
       flex: 2;
@@ -717,7 +717,7 @@
 
   <!-- 底部导航 -->
   <nav class="bottom-nav">
-    <a class="nav-item active" onclick="switchPage('assets')"><i class="fa-solid fa-wallet"></i>资产</a>
+    <a class="nav-item active" onclick="switchPage('assets')"><i class="fa-solid fa-wallet"></i>首页</a>
     <a class="nav-item" onclick="switchPage('history')" style="position:relative;"><i class="fa-solid fa-clock-rotate-left"></i>记录<span class="nav-badge" id="recordBadge" style="display:none;"></span></a>
     <button class="nav-add-btn" onclick="showAddModal()"><i class="fa-solid fa-plus"></i></button>
     <a class="nav-item" href="ai.html"><i class="fa-solid fa-robot"></i>AI报告</a>

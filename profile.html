@@ -39,7 +39,7 @@
     }
 
     .profile-card {
-      background: rgba(168, 124, 197, 0.65);
+      background: rgba(var(--primary-rgb), 0.65);
       border: 1.5px solid rgba(255,255,255,0.3);
       border-radius: 20px;
       padding: 24px 20px;
@@ -54,7 +54,7 @@
       width: 60px;
       height: 60px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.25);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -104,7 +104,7 @@
     }
 
     .menu-icon-primary {
-      background: rgba(148,111,178,0.1);
+      background: rgba(var(--primary-rgb),0.1);
       color: var(--primary);
     }
 
@@ -134,7 +134,8 @@
 
     .version {
       text-align: center;
-      color: #b0a4c4;
+      color: var(--accent);
+      opacity: 0.45;
       font-size: 0.75rem;
       margin-top: 30px;
       cursor: pointer;
@@ -446,7 +447,7 @@
       </div>
     </div>
 
-    <div class="version" onclick="showVersionModal()">Budget&nbsp;&nbsp;v1.2.0</div>
+    <div class="version" onclick="showVersionModal()">Budget&nbsp;&nbsp;v1.2.1</div>
   </div>
 
   <!-- 备注弹窗 -->
@@ -466,6 +467,19 @@
     <div class="modal-box">
       <div class="modal-title">版本历史</div>
       <ul class="version-list">
+        <li class="version-item">
+          <div class="version-head">
+            <span class="version-tag">v1.2.1</span>
+            <span class="version-date">2026-07-30</span>
+          </div>
+          <ul class="version-changes">
+            <li>新增奶油色主题</li>
+            <li>全站残留硬编码颜色清理</li>
+            <li>卡片、键盘、数字框等颜色动态化</li>
+            <li>山水墨主题分类颜色区分度优化</li>
+            <li>导航栏"资产"改名"首页"</li>
+          </ul>
+        </li>
         <li class="version-item">
           <div class="version-head">
             <span class="version-tag">v1.2.0</span>
@@ -519,7 +533,7 @@
   </div>
 
   <nav class="bottom-nav">
-    <a class="nav-item" onclick="location.href='index.html'"><i class="fa-solid fa-wallet"></i>资产</a>
+    <a class="nav-item" onclick="location.href='index.html'"><i class="fa-solid fa-wallet"></i>首页</a>
     <a class="nav-item" onclick="sessionStorage.setItem('switchTo','history');location.href='index.html'" style="position:relative;"><i class="fa-solid fa-clock-rotate-left"></i>记录</a>
     <button class="nav-add-btn" onclick="location.href='index.html#openAdd'"><i class="fa-solid fa-plus"></i></button>
     <a class="nav-item" href="ai.html"><i class="fa-solid fa-robot"></i>AI报告</a>
