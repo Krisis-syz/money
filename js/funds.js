@@ -443,10 +443,15 @@ function updateKbPreview() {
 }
 
 function kbInput(ch) {
-  if (ch === '-' && kbValue.includes('-')) return;
-  if (ch === '-' && kbValue.length > 0 && kbValue !== '0') return;
+  if (ch === '-') {
+    if (kbValue.startsWith('-')) { kbValue = kbValue.slice(1); }
+    else { kbValue = '-' + kbValue; }
+    if (kbTarget) kbTarget.value = kbValue;
+    updateKbPreview();
+    return;
+  }
   if (ch === '.' && kbValue.includes('.')) return;
-  if (kbValue === '0' && ch !== '.' && ch !== '-') kbValue = ch;
+  if (kbValue === '0' && ch !== '.') kbValue = ch;
   else kbValue += ch;
   if (kbTarget) kbTarget.value = kbValue;
   updateKbPreview();
