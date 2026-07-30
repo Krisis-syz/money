@@ -129,7 +129,7 @@ function renderTotalCard() {
   const subEl = document.getElementById('totalSub');
   if (loanTotal > 0) {
     const net = total - loanTotal;
-    subEl.textContent = '净资产：¥' + fmtNum(net) + '  |  负债：¥' + fmtNum(loanTotal);
+    subEl.textContent = '净资产：¥' + fmtNum(net) + '   |   负债：¥' + fmtNum(loanTotal);
     subEl.style.display = '';
   } else {
     subEl.style.display = 'none';
