@@ -411,10 +411,11 @@
       });
 
       const allTotals = getMonthlyTotals();
+      const pctBase = source.type === '借贷' ? Math.abs : x => x;
       let data = Object.entries(map).map(([m, v]) => ({
         month: m,
         value: v,
-        pct: allTotals[m] > 0 ? (v / allTotals[m] * 100) : 0
+        pct: allTotals[m] > 0 ? (pctBase(v) / allTotals[m] * 100) : 0
       }));
       data.sort((a, b) => a.month.localeCompare(b.month));
       data = filterByRange(data);
@@ -470,10 +471,11 @@
       });
 
       const allTotals = getMonthlyTotals();
+      const pctBase = source.type === '借贷' ? Math.abs : x => x;
       let data = Object.entries(map).map(([m, v]) => ({
         month: m,
         amount: v,
-        pct: allTotals[m] > 0 ? (v / allTotals[m] * 100) : 0
+        pct: allTotals[m] > 0 ? (pctBase(v) / allTotals[m] * 100) : 0
       }));
       data.sort((a, b) => b.month.localeCompare(a.month));
 
@@ -564,8 +566,12 @@
     }
 
     function getMonthlyTotals() {
+      const loanIds = new Set(allSources.filter(s => s.type === '借贷').map(s => s.id));
       const totals = {};
-      allRecords.forEach(r => { totals[r.yearMonth] = (totals[r.yearMonth] || 0) + r.amount; });
+      allRecords.forEach(r => {
+        if (loanIds.has(r.sourceId)) return;
+        totals[r.yearMonth] = (totals[r.yearMonth] || 0) + r.amount;
+      });
       return totals;
     }
 
