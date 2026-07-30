@@ -57,6 +57,21 @@ function getCategoryTotal(type, ym) {
 
 function simpleMarkdown(text) {
   if (!text) return '';
+
+  // 解析 markdown 表格
+  text = text.replace(/(?:^|\n)(\|.+\|)\n(\|[-| :]+\|)\n((?:\|.+\|\n?)+)/g, function(match, headerRow, sepRow, bodyRows) {
+    const headers = headerRow.split('|').filter(c => c.trim()).map(c => c.trim());
+    const rows = bodyRows.trim().split('\n').map(row =>
+      row.split('|').filter(c => c.trim()).map(c => c.trim())
+    );
+    let html = '<table class="md-table"><thead><tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr></thead><tbody>';
+    rows.forEach(row => {
+      html += '<tr>' + row.map(c => `<td>${c}</td>`).join('') + '</tr>';
+    });
+    html += '</tbody></table>';
+    return '\n' + html + '\n';
+  });
+
   return text
     .replace(/^### (.+)$/gm, '<h3>$1</h3>')
     .replace(/^## (.+)$/gm, '<h3>$1</h3>')
@@ -66,6 +81,8 @@ function simpleMarkdown(text) {
     .replace(/\n/g, '<br>')
     .replace(/(<\/h3>)<br>/g, '$1')
     .replace(/(<\/strong>)<br>/g, '$1')
+    .replace(/(<\/table>)<br>/g, '$1')
+    .replace(/<br>(<table)/g, '$1')
     .replace(/<br>(<div class="chart-placeholder)/g, '$1');
 }
 
