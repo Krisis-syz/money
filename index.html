@@ -123,11 +123,12 @@
     }
 
     .total-loan {
-      margin-top: 8px;
-      font-size: 0.68rem;
-      font-weight: 400;
-      color: rgba(255,255,255,0.65);
+      display: inline;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.8);
       font-style: italic;
+      margin-left: 4px;
     }
 
     /* ========== 标题行 ========== */
@@ -706,9 +707,8 @@
         <span class="total-label">总资产 (CNY)</span>
         <span class="total-pnl" id="monthPnl">本月 +0.00</span>
       </div>
-      <div class="total-amount" id="totalAmount">¥0.00</div>
+      <div class="total-amount" id="totalAmount">¥0.00<span class="total-loan" id="totalLoan" style="display:none;"></span></div>
       <div class="total-tags" id="totalTags"></div>
-      <div class="total-loan" id="totalLoan" style="display:none;"></div>
     </div>
 
     <!-- 标题行 -->

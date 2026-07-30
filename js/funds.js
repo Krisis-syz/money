@@ -88,7 +88,8 @@ function renderTotalCard() {
   const prev = getMonthTotal(getPrevMonth(currentMonth), true);
   const diff = total - prev;
 
-  document.getElementById('totalAmount').textContent = '¥' + fmtNum(total);
+  const amountEl = document.getElementById('totalAmount');
+  amountEl.childNodes[0].textContent = '¥' + fmtNum(total);
 
   const pnlEl = document.getElementById('monthPnl');
   if (prev > 0 || total > 0) {
